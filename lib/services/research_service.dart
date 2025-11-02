@@ -1,48 +1,105 @@
 import 'package:flutter/material.dart';
+import '../services/medical_research_service.dart';
 import '../models/research_model.dart';
-import '../utils/helpers.dart';
+import 'results_screen.dart';
 
-class ResearchService {
-  static final List<ResearchResult> _researchHistory = [];
-  
-  Future<ResearchResult> analyzeResearch(String topic, BuildContext context) async {
-    // Show loading
-    await Helpers.showLoadingDialog(context, 'Analyzing Research...');
-    
-    // Simulate API processing
-    await Future.delayed(Duration(seconds: 3));
-    
-    // Create research result
-    final result = ResearchResult(
-      topic: topic,
-      summary: 'This research analyzes $topic. The findings suggest significant implications in the field. Future AI integration will provide more detailed analysis.',
-      methodology: 'Comprehensive literature review and data analysis. AI-powered research methodology will be implemented when APIs are integrated.',
-      findings: '1. Key finding one related to $topic.\\n2. Important discovery in the field.\\n3. Potential applications and future research directions.',
-      date: DateTime.now(),
+class ResearchScreen extends StatefulWidget {
+  @override
+  _ResearchScreenState createState() => _ResearchScreenState();
+}
+
+class _ResearchScreenState extends State<ResearchScreen> {
+  final TextEditingController _topicController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Medical Research')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  Text(
+                    'Enter Medical Research Topic',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _topicController,
+                    decoration: InputDecoration(
+                      hintText: 'Example: Efficacy of new drug for diabetes...',
+                      border: OutlineInputBorder(),
+                      labelText: 'Research Topic',
+                    ),
+                    maxLines: 3,
+                  ),
+                  SizedBox(height: 20),
+                  
+                  if (_isLoading)
+                    Center(child: CircularProgressIndicator())
+                  else
+                    _buildMedicalExamples(),
+                ],
+              ),
+            ),
+            
+            ElevatedButton(
+              onPressed: _isLoading ? null : _startResearch,
+              child: Text(_isLoading ? 'Research in Progress...' : 'Start Medical Research'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-    
-    // Save to local storage
-    _researchHistory.add(result);
-    
-    // Close loading dialog
-    Navigator.of(context).pop();
-    
-    return result;
   }
-  
-  Future<List<ResearchResult>> getResearchHistory() async {
-    // Return local storage data
-    return _researchHistory;
+
+  Widget _buildMedicalExamples() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Medical Research Examples:', 
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Text('• Drug efficacy studies'),
+            Text('• Clinical trial analysis'),
+            Text('• Medical data interpretation'),
+            Text('• Treatment outcome research'),
+          ],
+        ),
+      ),
+    );
   }
-  
-  Future<void> deleteResearch(int index) async {
-    if (index >= 0 && index < _researchHistory.length) {
-      _researchHistory.removeAt(index);
+
+  void _startResearch() async {
+    if (_topicController.text.isEmpty) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final research = await MedicalResearchService().conductMedicalResearch(
+        _topicController.text
+      );
+      
+      setState(() => _isLoading = false);
+      
+      // Navigate to results
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) => ResultsScreen(research: research)
+      ));
+      
+    } catch (e) {
+      setState(() => _isLoading = false);
+      // Show error message
     }
-  }
-  
-  Future<void> saveResearchToLocal(ResearchResult research) async {
-    // Save to local storage (in real app, use shared_preferences)
-    _researchHistory.add(research);
   }
 }
