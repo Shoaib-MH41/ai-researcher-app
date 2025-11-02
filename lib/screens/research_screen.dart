@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/research_model.dart';
 import '../services/research_service.dart';
+import '../services/local_storage_service.dart';
+import '../widgets/result_display.dart';
 
 class ResearchScreen extends StatefulWidget {
   @override
@@ -34,13 +36,14 @@ class _ResearchScreenState extends State<ResearchScreen> {
                     decoration: InputDecoration(
                       hintText: 'Example: Analyze the effects of climate change on marine biodiversity...',
                       border: OutlineInputBorder(),
+                      labelText: 'Research Topic',
                     ),
                   ),
                   SizedBox(height: 20),
                   if (_isLoading)
                     Center(child: CircularProgressIndicator())
                   else if (_result != null)
-                    _buildResultCard()
+                    ResultDisplay(result: _result!)
                   else
                     _buildSampleResearch(),
                 ],
@@ -60,26 +63,6 @@ class _ResearchScreenState extends State<ResearchScreen> {
     );
   }
 
-  Widget _buildResultCard() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Research Results', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
-            Text(_result!.summary),
-            SizedBox(height: 16),
-            Text('Methodology: ${_result!.methodology}'),
-            SizedBox(height: 8),
-            Text('Findings: ${_result!.findings}'),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSampleResearch() {
     return Card(
       color: Colors.grey[100],
@@ -88,33 +71,66 @@ class _ResearchScreenState extends State<ResearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Sample Research Topics:', style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('• Climate change impact on biodiversity'),
-            Text('• AI in medical diagnosis'),
-            Text('• Renewable energy technologies'),
+            Text('💡 Sample Research Topics:', 
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            _buildSampleTopic('Climate change impact on biodiversity'),
+            _buildSampleTopic('AI in medical diagnosis'),
+            _buildSampleTopic('Renewable energy technologies'),
+            _buildSampleTopic('Machine learning in agriculture'),
+            _buildSampleTopic('Space exploration advancements'),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildSampleTopic(String topic) {
+    return GestureDetector(
+      onTap: () {
+        _researchController.text = topic;
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Text('• $topic', style: TextStyle(color: Colors.blue)),
+      ),
+    );
+  }
+
   void _startResearch() async {
-    if (_researchController.text.isEmpty) return;
+    if (_researchController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a research topic')),
+      );
+      return;
+    }
 
     setState(() {
       _isLoading = true;
       _result = null;
     });
 
-    // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
-
-    final result = await ResearchService().analyzeResearch(_researchController.text);
-
-    setState(() {
-      _isLoading = false;
-      _result = result;
-    });
+    try {
+      final result = await ResearchService().analyzeResearch(
+        _researchController.text, 
+        context
+      );
+      
+      // Save to local storage
+      await LocalStorageService.saveResearch(result);
+      
+      setState(() {
+        _isLoading = false;
+        _result = result;
+      });
+      
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Research analysis completed')),
+      );
+    }
   }
 }
