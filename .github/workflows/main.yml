@@ -22,29 +22,22 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.5'
+          flutter-version: '5.12.0'
           channel: 'stable'
+
+      - name: Clean old builds
+        run: flutter clean
 
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
-
-      # ✅ Auto-detect APK path logic
-      - name: Find built APK
-        id: find_apk
         run: |
-          APK_PATH=$(find build/app/outputs -type f -name "app-release.apk" | head -n 1)
-          if [ -z "$APK_PATH" ]; then
-            echo "❌ APK not found!"
-            exit 1
-          fi
-          echo "✅ Found APK at: $APK_PATH"
-          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          flutter build apk --release
+          ls -R build/app/outputs/
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
-          path: ${{ steps.find_apk.outputs.apk_path }}
+          path: build/app/outputs/flutter-apk/app-release.apk
