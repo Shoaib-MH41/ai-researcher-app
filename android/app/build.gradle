@@ -1,3 +1,15 @@
+buildscript {
+    ext.kotlin_version = '1.9.24'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:8.2.2'
+    }
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -6,31 +18,36 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-// Flutter SDK path - GitHub Actions کے لیے default value
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    flutterRoot = System.env.FLUTTER_HOME ?: '../flutter' // GitHub Actions کے لیے
+    flutterRoot = System.env.FLUTTER_HOME ?: '../flutter'
 }
 
-// Version codes - hardcode values for CI
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0.0'
-}
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
+def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0.0'
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    // Use explicit SDK versions instead of flutter.*
+    namespace "com.example.ai_researcher_app"
     compileSdkVersion 34
     ndkVersion "25.1.8937393"
+
+    signingConfigs {
+        debug {
+            storeFile file("${rootDir}/debug.keystore")
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.example.ai_researcher_app"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -41,28 +58,14 @@ android {
         jvmTarget = '1.8'
     }
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
-
-    defaultConfig {
-        applicationId "com.example.ai_researcher_app"
-        minSdkVersion 21  // Explicit minimum SDK
-        targetSdkVersion 34
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-    }
-
     buildTypes {
         release {
             signingConfig signingConfigs.debug
-            // Add these for better build stability
             minifyEnabled false
             shrinkResources false
         }
     }
 
-    // Add this to avoid build failures
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
