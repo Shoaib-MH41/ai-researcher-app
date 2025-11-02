@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Remember: this file should have executable permissions
+# Use: chmod +x gradlew
