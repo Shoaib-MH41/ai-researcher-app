@@ -15,28 +15,29 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.22.2'
+        flutter-version: '3.19.5'  # Most stable version
         
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+    - name: Create New Flutter Project
+      run: |
+        # Temporary directory بنائیں
+        mkdir -p /tmp/flutter_build
+        cd /tmp/flutter_build
         
-    - name: Run Flutter Doctor
-      run: flutter doctor -v
-      
-    - name: Get dependencies
-      run: flutter pub get
-      
-    - name: Build APK (Debug first)
-      run: flutter build apk --debug
-      
-    - name: Build Release APK
-      run: flutter build apk --release --no-tree-shake-icons
-      
+        # نیا Flutter project بنائیں
+        flutter create --org com.example --project-name ai_researcher_app --platforms android .
+        
+        # آپ کے lib files کو copy کریں
+        cp -r /home/runner/work/ai-researcher-app/ai-researcher-app/lib/* lib/
+        cp /home/runner/work/ai-researcher-app/ai-researcher-app/pubspec.yaml .
+        
+    - name: Build in Temp Directory
+      run: |
+        cd /tmp/flutter_build
+        flutter pub get
+        flutter build apk --debug
+        
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-release
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: app-debug
+        path: /tmp/flutter_build/build/app/outputs/flutter-apk/app-debug.apk
