@@ -30,7 +30,7 @@ jobs:
         run: |
           if [ ! -d android ]; then
             echo "android folder missing, creating new..."
-            flutter create --project-name aladdin_app .
+            flutter create --project-name  ai-researcher-app
           else
             echo "Re-creating android folder to fix Gradle issues..."
             rm -rf android
