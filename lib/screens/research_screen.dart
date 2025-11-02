@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/medical_research_service.dart';
-import '../models/research_model.dart';
 import 'results_screen.dart';
 
 class ResearchScreen extends StatefulWidget {
