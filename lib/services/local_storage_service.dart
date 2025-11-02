@@ -2,41 +2,42 @@ import 'dart:convert';
 import '../models/research_model.dart';
 
 class LocalStorageService {
-  static const String _researchKey = 'research_history';
-  
+  static const String _researchKey = 'medical_research_history';
+  static List<MedicalResearch> _researchList = [];
+
   // In real app, use shared_preferences package
   // For now, using in-memory storage
   
-  static List<ResearchResult> _researchHistory = [];
-  
-  static Future<void> saveResearch(ResearchResult research) async {
-    _researchHistory.add(research);
-    // In real implementation:
+  static Future<void> saveResearch(MedicalResearch research) async {
+    _researchList.add(research);
+    
+    // Real implementation would be:
     // final prefs = await SharedPreferences.getInstance();
-    // String encodedData = jsonEncode(_researchHistory.map((r) => r.toJson()).toList());
+    // String encodedData = jsonEncode(_researchList.map((r) => r.toJson()).toList());
     // await prefs.setString(_researchKey, encodedData);
   }
-  
-  static Future<List<ResearchResult>> getResearchHistory() async {
-    // In real implementation:
+
+  static Future<List<MedicalResearch>> getResearchHistory() async {
+    // Real implementation:
     // final prefs = await SharedPreferences.getInstance();
     // String? researchData = prefs.getString(_researchKey);
     // if (researchData != null) {
     //   List<dynamic> decoded = jsonDecode(researchData);
-    //   return decoded.map((item) => ResearchResult.fromJson(item)).toList();
+    //   return decoded.map((item) => MedicalResearch.fromJson(item)).toList();
     // }
-    return _researchHistory;
+    
+    return _researchList;
   }
-  
-  static Future<void> deleteResearch(int index) async {
-    if (index >= 0 && index < _researchHistory.length) {
-      _researchHistory.removeAt(index);
-      // Save to persistent storage in real implementation
-    }
+
+  static Future<void> deleteResearch(String researchId) async {
+    _researchList.removeWhere((research) => research.id == researchId);
+    
+    // Save to persistent storage in real implementation
   }
-  
+
   static Future<void> clearAllResearch() async {
-    _researchHistory.clear();
+    _researchList.clear();
+    
     // Clear from persistent storage in real implementation
   }
 }
