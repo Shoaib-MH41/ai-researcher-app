@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/research_model.dart';
 import '../services/local_storage_service.dart';
-import '../widgets/research_card.dart';
+import 'results_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   @override
@@ -9,7 +9,7 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  List<ResearchResult> _researchHistory = [];
+  List<MedicalResearch> _researchHistory = [];
   bool _isLoading = true;
 
   @override
@@ -27,29 +27,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   void _deleteResearch(int index) async {
-    await LocalStorageService.deleteResearch(index);
-    _loadHistory(); // Reload the list
-  }
-
-  void _clearAllResearch() async {
-    await LocalStorageService.clearAllResearch();
-    _loadHistory(); // Reload the list
+    if (index >= 0 && index < _researchHistory.length) {
+      final research = _researchHistory[index];
+      await LocalStorageService.deleteResearch(research.id);
+      _loadHistory(); // Reload the list
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Research History'),
-        actions: [
-          if (_researchHistory.isNotEmpty)
-            IconButton(
-              icon: Icon(Icons.delete_sweep),
-              onPressed: _clearAllResearch,
-              tooltip: 'Clear All History',
-            ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Research History')),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _researchHistory.isEmpty
@@ -59,15 +47,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     children: [
                       Icon(Icons.history, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
-                      Text(
-                        'No Research History',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
+                      Text('No Research History', 
+                          style: TextStyle(fontSize: 18, color: Colors.grey)),
                       SizedBox(height: 8),
-                      Text(
-                        'Your research projects will appear here',
-                        style: TextStyle(color: Colors.grey),
-                      ),
+                      Text('Your medical research will appear here'),
                     ],
                   ),
                 )
@@ -75,86 +58,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   itemCount: _researchHistory.length,
                   itemBuilder: (context, index) {
                     final research = _researchHistory[index];
-                    return ResearchCard(
-                      research: research,
-                      onTap: () => _showResearchDetails(research),
-                      onDelete: () => _deleteResearch(index),
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        leading: Icon(Icons.medical_services, color: Colors.blue),
+                        title: Text(research.topic),
+                        subtitle: Text('${research.createdAt.day}/${research.createdAt.month}/${research.createdAt.year}'),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteResearch(index),
+                        ),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (context) => ResultsScreen(research: research)
+                          ));
+                        },
+                      ),
                     );
                   },
                 ),
-    );
-  }
-
-  void _showResearchDetails(ResearchResult research) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Research Details',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDetailSection('Research Topic', research.topic),
-                    SizedBox(height: 16),
-                    _buildDetailSection('Executive Summary', research.summary),
-                    SizedBox(height: 16),
-                    _buildDetailSection('Methodology', research.methodology),
-                    SizedBox(height: 16),
-                    _buildDetailSection('Key Findings', research.findings),
-                    SizedBox(height: 16),
-                    _buildDetailSection('Date', 
-                      '${research.date.day}/${research.date.month}/${research.date.year}'
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailSection(String title, String content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          content,
-          style: TextStyle(fontSize: 16, height: 1.5),
-        ),
-        Divider(height: 24),
-      ],
     );
   }
 }
