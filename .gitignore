@@ -1,0 +1,73 @@
+Flutter & Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+flutter_*.png
+*.flutter-plugins
+*.flutter-plugins-dependencies
+generated_plugin_registrant.dart
+
+# IDE & Editor Files
+.idea/
+.vscode/
+*.iml
+
+# Android related
+*.apk
+*.aar
+*.jks
+*.keystore
+local.properties
+android/key.properties
+android/app/google-services.json
+
+# iOS related
+ios/Pods/
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner.xcworkspace/
+DerivedData/
+*.xcuserstate
+*.xcuserdata/
+*.xcworkspace
+
+# Build Outputs
+*.lock
+*.log
+*.tmp
+*.bak
+
+# Secrets / Environment Files
+*.env
+.env.*
+*.plist
+*.pem
+*.p12
+credentials.json
+firebase_options.dart
+
+# Testing & Coverage
+coverage/
+test_results/
+*.lcov
+*.coverage
+
+# System Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.orig
+
+# Node (in case used for Firebase tools or AI APIs)
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
+package-lock.json
+
