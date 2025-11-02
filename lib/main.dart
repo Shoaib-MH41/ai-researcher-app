@@ -4,7 +4,6 @@ import 'screens/research_screen.dart';
 import 'screens/results_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/admin_panel.dart';
-import 'models/research_model.dart';
 
 void main() {
   runApp(MyApp());
