@@ -1,5 +1,6 @@
 buildscript {
     ext.kotlin_version = '1.7.10'
+
     repositories {
         google()
         mavenCentral()
@@ -18,11 +19,11 @@ allprojects {
     }
 }
 
+// CI build consistency
 rootProject.buildDir = '../build'
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(':app')
 }
 
