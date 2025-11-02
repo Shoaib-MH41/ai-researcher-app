@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/medical_research_service.dart';
 import '../models/research_model.dart';
-import 'results_screen.dart';  // یہ import شامل کریں
+import 'results_screen.dart';
 
 class ResearchScreen extends StatefulWidget {
+  const ResearchScreen({super.key});
+
   @override
-  _ResearchScreenState createState() => _ResearchScreenState();
+  State<ResearchScreen> createState() => _ResearchScreenState();
 }
 
 class _ResearchScreenState extends State<ResearchScreen> {
@@ -13,46 +15,51 @@ class _ResearchScreenState extends State<ResearchScreen> {
   bool _isLoading = false;
 
   @override
+  void dispose() {
+    _topicController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Medical Research')),
+      appBar: AppBar(title: const Text('Medical Research')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Expanded(
               child: ListView(
                 children: [
-                  Text(
+                  const Text(
                     'Enter Medical Research Topic',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _topicController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Example: Efficacy of new drug for diabetes...',
                       border: OutlineInputBorder(),
                       labelText: 'Research Topic',
                     ),
                     maxLines: 3,
                   ),
-                  SizedBox(height: 20),
-                  
+                  const SizedBox(height: 20),
                   if (_isLoading)
-                    Center(child: CircularProgressIndicator())
+                    const Center(child: CircularProgressIndicator())
                   else
                     _buildMedicalExamples(),
                 ],
               ),
             ),
-            
             ElevatedButton(
               onPressed: _isLoading ? null : _startResearch,
-              child: Text(_isLoading ? 'Research in Progress...' : 'Start Medical Research'),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
+              child: Text(
+                  _isLoading ? 'Research in Progress...' : 'Start Medical Research'),
             ),
           ],
         ),
@@ -63,12 +70,14 @@ class _ResearchScreenState extends State<ResearchScreen> {
   Widget _buildMedicalExamples() {
     return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Medical Research Examples:', 
-                style: TextStyle(fontWeight: FontWeight.bold)),
+          children: const [
+            Text(
+              'Medical Research Examples:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 8),
             Text('• Drug efficacy studies'),
             Text('• Clinical trial analysis'),
@@ -80,21 +89,18 @@ class _ResearchScreenState extends State<ResearchScreen> {
     );
   }
 
-  void _startResearch() async {
+  Future<void> _startResearch() async {
     if (_topicController.text.isEmpty) return;
-    
+
     setState(() => _isLoading = true);
-    
-    // Medical research service call
-    final research = await MedicalResearchService().conductMedicalResearch(
-      _topicController.text
-    );
-    
+    final research =
+        await MedicalResearchService().conductMedicalResearch(_topicController.text);
     setState(() => _isLoading = false);
-    
-    // Navigate to results
-    Navigator.push(context, MaterialPageRoute(
-      builder: (context) => ResultsScreen(research: research)
-    ));
+
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ResultsScreen(research: research)),
+    );
   }
 }
