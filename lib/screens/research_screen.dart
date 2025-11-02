@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/medical_research_service.dart';
 import '../models/research_model.dart';
-import '../services/research_service.dart';
-import '../services/local_storage_service.dart';
-import '../widgets/result_display.dart';
 
 class ResearchScreen extends StatefulWidget {
   @override
@@ -10,49 +8,47 @@ class ResearchScreen extends StatefulWidget {
 }
 
 class _ResearchScreenState extends State<ResearchScreen> {
-  final TextEditingController _researchController = TextEditingController();
+  final TextEditingController _topicController = TextEditingController();
   bool _isLoading = false;
-  ResearchResult? _result;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('New Research')),
+      appBar: AppBar(title: Text('Medical Research')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
             Expanded(
               child: ListView(
                 children: [
                   Text(
-                    'Enter Your Research Topic',
+                    'Enter Medical Research Topic',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 16),
                   TextField(
-                    controller: _researchController,
-                    maxLines: 5,
+                    controller: _topicController,
                     decoration: InputDecoration(
-                      hintText: 'Example: Analyze the effects of climate change on marine biodiversity...',
+                      hintText: 'Example: Efficacy of new drug for diabetes...',
                       border: OutlineInputBorder(),
                       labelText: 'Research Topic',
                     ),
+                    maxLines: 3,
                   ),
                   SizedBox(height: 20),
+                  
                   if (_isLoading)
                     Center(child: CircularProgressIndicator())
-                  else if (_result != null)
-                    ResultDisplay(result: _result!)
                   else
-                    _buildSampleResearch(),
+                    _buildMedicalExamples(),
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            
             ElevatedButton(
               onPressed: _isLoading ? null : _startResearch,
-              child: Text('Start Research Analysis'),
+              child: Text(_isLoading ? 'Research in Progress...' : 'Start Medical Research'),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
               ),
@@ -63,74 +59,41 @@ class _ResearchScreenState extends State<ResearchScreen> {
     );
   }
 
-  Widget _buildSampleResearch() {
+  Widget _buildMedicalExamples() {
     return Card(
-      color: Colors.grey[100],
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('💡 Sample Research Topics:', 
+            Text('Medical Research Examples:', 
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 12),
-            _buildSampleTopic('Climate change impact on biodiversity'),
-            _buildSampleTopic('AI in medical diagnosis'),
-            _buildSampleTopic('Renewable energy technologies'),
-            _buildSampleTopic('Machine learning in agriculture'),
-            _buildSampleTopic('Space exploration advancements'),
+            SizedBox(height: 8),
+            Text('• Drug efficacy studies'),
+            Text('• Clinical trial analysis'),
+            Text('• Medical data interpretation'),
+            Text('• Treatment outcome research'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSampleTopic(String topic) {
-    return GestureDetector(
-      onTap: () {
-        _researchController.text = topic;
-      },
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 4),
-        child: Text('• $topic', style: TextStyle(color: Colors.blue)),
-      ),
-    );
-  }
-
   void _startResearch() async {
-    if (_researchController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a research topic')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _result = null;
-    });
-
-    try {
-      final result = await ResearchService().analyzeResearch(
-        _researchController.text, 
-        context
-      );
-      
-      // Save to local storage
-      await LocalStorageService.saveResearch(result);
-      
-      setState(() {
-        _isLoading = false;
-        _result = result;
-      });
-      
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Research analysis completed')),
-      );
-    }
+    if (_topicController.text.isEmpty) return;
+    
+    setState(() => _isLoading = true);
+    
+    // Medical research service call
+    final research = await MedicalResearchService().conductMedicalResearch(
+      _topicController.text
+    );
+    
+    setState(() => _isLoading = false);
+    
+    // Navigate to results
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) => ResultsScreen(research: research)
+    ));
   }
 }
