@@ -1,17 +1,17 @@
-name: Build Flutter APK
+name: Diagnostic Flutter Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build:
+  diagnostic-build:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v4
       
     - name: Setup Flutter
@@ -24,58 +24,159 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
-        
-    - name: Create Flutter Project Structure
+    
+    # 🔍 PHASE 1: PROJECT STRUCTURE DIAGNOSIS
+    - name: Project Structure Analysis
+      id: structure-check
       run: |
-        flutter create --org com.example --project-name ai_researcher_app --platforms android . --overwrite
+        echo "=== PROJECT STRUCTURE DIAGNOSIS ==="
         
-    - name: Get dependencies
-      run: flutter pub get
-      
-    - name: Build Debug APK
-      run: flutter build apk --debug
-      
-    - name: Build Release APK
+        # Check essential files
+        if [ ! -f "pubspec.yaml" ]; then
+          echo "❌ ERROR: pubspec.yaml missing"
+          exit 1
+        fi
+        
+        if [ ! -d "lib" ]; then
+          echo "❌ ERROR: lib/ directory missing"
+          exit 1
+        fi
+        
+        if [ ! -d "android" ]; then
+          echo "🟡 WARNING: android/ directory missing - will be created"
+        fi
+        
+        echo "✅ Basic project structure OK"
+        
+    # 🔍 PHASE 2: FLUTTER ENVIRONMENT CHECK
+    - name: Flutter Environment Diagnosis
+      id: flutter-check
       run: |
-        if flutter build apk --release --no-tree-shake-icons; then
-          echo "RELEASE_BUILD_SUCCESS=true" >> $GITHUB_ENV
+        echo "=== FLUTTER ENVIRONMENT DIAGNOSIS ==="
+        flutter doctor -v
+        flutter --version
+        
+        # Check if project needs initialization
+        if [ ! -f "android/app/src/main/AndroidManifest.xml" ]; then
+          echo "🟡 Project not fully initialized, running flutter create..."
+          flutter create --org com.example --project-name ai_researcher_app --platforms android . --overwrite
+        fi
+        
+    # 🔍 PHASE 3: CODE ANALYSIS
+    - name: Static Code Analysis
+      id: code-analysis
+      run: |
+        echo "=== STATIC CODE ANALYSIS ==="
+        flutter analyze --no-pub --write=analysis_results.json || true
+        
+        # Show analysis results
+        if [ -f "analysis_results.json" ]; then
+          echo "Analysis Results:"
+          cat analysis_results.json | jq '.diagnostics[] | select(.severity == "ERROR")' || echo "No critical errors found"
+        fi
+        
+    # 🔍 PHASE 4: DEPENDENCIES CHECK
+    - name: Dependencies Diagnosis
+      id: deps-check
+      run: |
+        echo "=== DEPENDENCIES DIAGNOSIS ==="
+        flutter pub get
+        
+        # Check for dependency conflicts
+        flutter pub deps --style=tree > dependency_tree.txt
+        echo "Dependency tree generated"
+        
+    # 🔍 PHASE 5: GRADLE BUILD DIAGNOSIS
+    - name: Android Gradle Diagnosis
+      id: gradle-check
+      run: |
+        echo "=== ANDROID GRADLE DIAGNOSIS ==="
+        
+        cd android
+        
+        # Check Gradle configuration
+        ./gradlew clean --info 2>&1 | tee gradle_clean.log || echo "Gradle clean completed with warnings"
+        
+        # Analyze Gradle logs for specific issues
+        if grep -q "ERROR" gradle_clean.log; then
+          echo "❌ GRADLE ERRORS FOUND:"
+          grep -i "error" gradle_clean.log | head -10
+          exit 1
+        fi
+        
+        cd ..
+        
+    # 🔍 PHASE 6: BUILD WITH DETAILED LOGGING
+    - name: Detailed Build Analysis
+      id: build-analysis
+      run: |
+        echo "=== DETAILED BUILD ANALYSIS ==="
+        
+        # Build with maximum verbosity
+        flutter build apk --debug --verbose 2>&1 | tee build_debug.log || true
+        
+        # Analyze build logs
+        echo "=== BUILD LOG ANALYSIS ==="
+        
+        if grep -q "error:" build_debug.log; then
+          echo "❌ BUILD ERRORS:"
+          grep -i "error:" build_debug.log | head -15
+        fi
+        
+        if grep -q "exception" build_debug.log; then
+          echo "❌ EXCEPTIONS:"
+          grep -i "exception" build_debug.log | head -10
+        fi
+        
+        if grep -q "fail" build_debug.log; then
+          echo "🟡 BUILD WARNINGS:"
+          grep -i "fail" build_debug.log | head -10
+        fi
+        
+        # Check if APK was generated
+        if find build/ -name "*.apk" -type f | grep -q .; then
+          echo "✅ APK GENERATED SUCCESSFULLY"
+          find build/ -name "*.apk" -type f
         else
-          echo "RELEASE_BUILD_SUCCESS=false" >> $GITHUB_ENV
-          echo "Release build failed, but debug APK is available"
+          echo "❌ NO APK GENERATED - Checking reasons..."
+          # Look for compilation failures
+          tail -50 build_debug.log
+          exit 1
         fi
-      
-    - name: Rename APK Files
+        
+    # 🔍 PHASE 7: FINAL VERIFICATION
+    - name: Final Verification
+      id: final-check
       run: |
-        # Debug APK rename
-        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-debug.apk medical_research_app_debug_v1.0.apk
+        echo "=== FINAL VERIFICATION ==="
+        
+        # Verify APK integrity
+        APK_PATH=$(find build/ -name "*.apk" -type f | head -1)
+        if [ -n "$APK_PATH" ]; then
+          echo "✅ APK Found: $APK_PATH"
+          ls -la "$APK_PATH"
+          echo "APK Size: $(du -h "$APK_PATH" | cut -f1)"
+        else
+          echo "❌ CRITICAL: No APK found after successful build"
+          exit 1
         fi
         
-        # Release APK rename  
-        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
-          cp build/app/outputs/flutter-apk/app-release.apk medical_research_app_release_v1.0.apk
-        fi
-        
-    - name: Upload Debug APK
+    # ✅ SUCCESS: UPLOAD ARTIFACTS
+    - name: Upload APK Artifact
+      if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: medical-research-debug
-        path: medical_research_app_debug_v1.0.apk
-        if-no-files-found: warn
+        name: medical-research-app
+        path: build/app/outputs/flutter-apk/app-debug.apk
         
-    - name: Upload Release APK
-      if: env.RELEASE_BUILD_SUCCESS == 'true'
+    # 📋 UPLOAD DIAGNOSTIC REPORTS
+    - name: Upload Diagnostic Reports
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: medical-research-release
-        path: medical_research_app_release_v1.0.apk
-        if-no-files-found: warn
-        
-    - name: Upload Both APKs
-      if: env.RELEASE_BUILD_SUCCESS == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: all-apks
+        name: build-diagnostics
         path: |
-          medical_research_app_debug_v1.0.apk
-          medical_research_app_release_v1.0.apk
+          build_debug.log
+          gradle_clean.log
+          analysis_results.json
+          dependency_tree.txt
