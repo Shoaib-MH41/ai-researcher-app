@@ -42,12 +42,9 @@ class MyApp extends StatelessWidget {
         ),
       ),
       initialRoute: '/home',
-      routes: {
-        '/home': (context) => const HomeScreen(),
-        '/research': (context) => const ResearchScreen(),
-        '/history': (context) => const HistoryScreen(),
-        '/admin': (context) => const AdminPanel(),
-      },
-    );
-  }
-}
+routes: {
+  '/home': (context) => HomeScreen(),
+  '/research': (context) => ResearchScreen(),
+  '/history': (context) => HistoryScreen(),
+  '/admin': (context) => AdminPanel(),
+},
