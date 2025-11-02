@@ -1,15 +1,17 @@
-name: Diagnostic Flutter Build
+name: Flutter APK Build
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
-  diagnostic-build:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Flutter
@@ -18,40 +20,40 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      - name: Verify Flutter installation
+      - name: Verify Flutter Installation
         run: flutter --version
 
-      - name: Check project structure
+      - name: Generate local.properties (for Android SDK path)
         run: |
-          echo "=== CHECKING PROJECT STRUCTURE ==="
-          for dir in lib android ios; do
-            if [ -d "$dir" ]; then
-              echo "✅ Folder found: $dir"
-            else
-              echo "❌ Missing folder: $dir"
-            fi
-          done
-          if [ -f "pubspec.yaml" ]; then
-            echo "✅ Found pubspec.yaml"
-          else
-            echo "❌ Missing pubspec.yaml"
-          fi
+          echo "sdk.dir=/usr/local/android-sdk" > android/local.properties
+          echo "flutter.sdk=/opt/hostedtoolcache/flutter/stable-3.22.2-x64" >> android/local.properties
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
 
-      - name: Static Code Analysis
-        run: |
-          echo "=== STATIC CODE ANALYSIS ==="
-          flutter analyze --no-fatal-infos --no-fatal-warnings || true
+      - name: Analyze Code (Optional but Recommended)
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos || true
 
-      - name: Dry Run Build (No APK)
-        run: |
-          echo "=== BUILD CHECK START ==="
-          flutter build apk --debug --no-tree-shake-icons || true
-          echo "=== BUILD CHECK COMPLETE ==="
+      - name: Build Flutter APK (Release)
+        run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Summary
+      - name: Check if APK Exists
         run: |
-          echo "✅ Diagnostic completed successfully."
-          echo "🚫 This run does NOT produce APK files — only verifies build pipeline."
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            echo "✅ APK build successful!"
+          else
+            echo "❌ APK not found! Check gradle or local.properties setup."
+            exit 1
+          fi
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-researcher-app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Build Summary
+        run: |
+          echo "🎯 Flutter Build Completed Successfully!"
+          echo "📦 APK stored as artifact: ai-researcher-app-release"
+
