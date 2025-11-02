@@ -2,7 +2,7 @@ name: medical_research_app
 description: A medical research app with AI capabilities
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -10,15 +10,26 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
-  flutter_secure_storage: ^8.2.0
-  printing: ^5.10.0
-  pdf: ^3.10.2
+
+  # Icons and UI
+  cupertino_icons: ^1.0.8
+
+  # Secure storage (updated for latest Flutter compatibility)
+  flutter_secure_storage: ^9.2.2
+
+  # PDF generation and printing
+  printing: ^5.13.1
+  pdf: ^3.11.2
+
+  # Firebase or AI integration (optional for expansion)
+  http: ^1.2.2
+  provider: ^6.1.2
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.2
 
 flutter:
   uses-material-design: true
