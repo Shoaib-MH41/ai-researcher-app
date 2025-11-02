@@ -88,7 +88,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildFeatureCard(String title, IconData icon, Color color, Function onTap) {
     return Card(
       child: InkWell(
-        onTap: onTap,
+onTap: onTap as void Function()?,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
