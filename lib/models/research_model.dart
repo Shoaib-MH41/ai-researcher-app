@@ -1,37 +1,23 @@
-class ResearchResult {
+class MedicalResearch {
+  final String id;
   final String topic;
-  final String summary;
+  final String hypothesis;
   final String methodology;
-  final String findings;
-  final DateTime date;
+  final String labResults;
+  final String analysis;
+  final String conclusion;
+  final String pdfReport;
+  final DateTime createdAt;
   
-  ResearchResult({
+  MedicalResearch({
+    required this.id,
     required this.topic,
-    required this.summary,
+    required this.hypothesis,
     required this.methodology,
-    required this.findings,
-    required this.date,
+    required this.labResults,
+    required this.analysis,
+    required this.conclusion,
+    required this.pdfReport,
+    required this.createdAt,
   });
-  
-  // For future local storage implementation
-  Map<String, dynamic> toJson() {
-    return {
-      'topic': topic,
-      'summary': summary,
-      'methodology': methodology,
-      'findings': findings,
-      'date': date.toIso8601String(),
-    };
-  }
-  
-  // For future local storage implementation
-  factory ResearchResult.fromJson(Map<String, dynamic> json) {
-    return ResearchResult(
-      topic: json['topic'],
-      summary: json['summary'],
-      methodology: json['methodology'],
-      findings: json['findings'],
-      date: DateTime.parse(json['date']),
-    );
-  }
 }
