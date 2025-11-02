@@ -1,4 +1,3 @@
-
 name: Build Flutter APK
 
 on:
@@ -23,40 +22,29 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.3'
+          flutter-version: '3.19.5'
           channel: 'stable'
 
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            build
-          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-
-
-      # ✅ Optional: Recreate Android folder only if missing
-      - name: Ensure valid Android project
-        run: |
-          if [ ! -d "android" ]; then
-            echo "Android folder missing, creating new..."
-            flutter create --project-name medical_research_app .
-          else
-            echo "Android project exists, skipping recreation."
-          fi
-
-      - name: Get Flutter dependencies
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Analyze code
-        run: flutter analyze
-
       - name: Build release APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release
 
-      - name: Upload release artifact
+      # ✅ Auto-detect APK path logic
+      - name: Find built APK
+        id: find_apk
+        run: |
+          APK_PATH=$(find build/app/outputs -type f -name "app-release.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ APK not found!"
+            exit 1
+          fi
+          echo "✅ Found APK at: $APK_PATH"
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ steps.find_apk.outputs.apk_path }}
