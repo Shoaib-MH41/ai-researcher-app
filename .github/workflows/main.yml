@@ -22,28 +22,39 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.5'
+          flutter-version: '3.24.3'
           channel: 'stable'
 
-      # ✅ Android project regenerate if old/unsupported
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            build
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      # ✅ Optional: Recreate Android folder only if missing
       - name: Ensure valid Android project
         run: |
-          if [ ! -d android ]; then
-            echo "android folder missing, creating new..."
-            flutter create --project-name  ai-researcher-app
+          if [ ! -d "android" ]; then
+            echo "Android folder missing, creating new..."
+            flutter create --project-name medical_research_app .
           else
-            echo "Re-creating android folder to fix Gradle issues..."
-            rm -rf android
-            flutter create --project-name aladdin_app .
+            echo "Android project exists, skipping recreation."
           fi
 
-      - name: Get dependencies
+      - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
 
       - name: Build release APK
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
