@@ -3,6 +3,8 @@ name: Build Flutter APK
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -15,29 +17,65 @@ jobs:
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.19.5'  # Most stable version
+        flutter-version: '3.22.2'
         
-    - name: Create New Flutter Project
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        
+    - name: Create Flutter Project Structure
       run: |
-        # Temporary directory بنائیں
-        mkdir -p /tmp/flutter_build
-        cd /tmp/flutter_build
+        flutter create --org com.example --project-name ai_researcher_app --platforms android . --overwrite
         
-        # نیا Flutter project بنائیں
-        flutter create --org com.example --project-name ai_researcher_app --platforms android .
-        
-        # آپ کے lib files کو copy کریں
-        cp -r /home/runner/work/ai-researcher-app/ai-researcher-app/lib/* lib/
-        cp /home/runner/work/ai-researcher-app/ai-researcher-app/pubspec.yaml .
-        
-    - name: Build in Temp Directory
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Build Debug APK
+      run: flutter build apk --debug
+      
+    - name: Build Release APK
       run: |
-        cd /tmp/flutter_build
-        flutter pub get
-        flutter build apk --debug
+        if flutter build apk --release --no-tree-shake-icons; then
+          echo "RELEASE_BUILD_SUCCESS=true" >> $GITHUB_ENV
+        else
+          echo "RELEASE_BUILD_SUCCESS=false" >> $GITHUB_ENV
+          echo "Release build failed, but debug APK is available"
+        fi
+      
+    - name: Rename APK Files
+      run: |
+        # Debug APK rename
+        if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-debug.apk medical_research_app_debug_v1.0.apk
+        fi
         
-    - name: Upload APK
+        # Release APK rename  
+        if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+          cp build/app/outputs/flutter-apk/app-release.apk medical_research_app_release_v1.0.apk
+        fi
+        
+    - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        path: /tmp/flutter_build/build/app/outputs/flutter-apk/app-debug.apk
+        name: medical-research-debug
+        path: medical_research_app_debug_v1.0.apk
+        if-no-files-found: warn
+        
+    - name: Upload Release APK
+      if: env.RELEASE_BUILD_SUCCESS == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: medical-research-release
+        path: medical_research_app_release_v1.0.apk
+        if-no-files-found: warn
+        
+    - name: Upload Both APKs
+      if: env.RELEASE_BUILD_SUCCESS == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: all-apks
+        path: |
+          medical_research_app_debug_v1.0.apk
+          medical_research_app_release_v1.0.apk
