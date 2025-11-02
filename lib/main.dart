@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/research_screen.dart';
-import 'screens/results_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/admin_panel.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Medical Research AI',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue),
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Roboto',
         appBarTheme: AppBarTheme(
@@ -29,22 +31,22 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
-      home: HomeScreen(),
-      debugShowCheckedModeBanner: false,
+      initialRoute: '/home',
       routes: {
-        '/home': (context) => HomeScreen(),
-        '/research': (context) => ResearchScreen(),
-        '/history': (context) => HistoryScreen(),
-        '/admin': (context) => AdminPanel(),
+        '/home': (context) => const HomeScreen(),
+        '/research': (context) => const ResearchScreen(),
+        '/history': (context) => const HistoryScreen(),
+        '/admin': (context) => const AdminPanel(),
       },
     );
   }
