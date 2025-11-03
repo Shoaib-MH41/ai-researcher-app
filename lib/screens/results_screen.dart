@@ -9,72 +9,138 @@ class ResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Research Results')),
+      appBar: AppBar(
+        title: Text('Research Results'),
+        backgroundColor: Colors.blue[700],
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () => _shareResults(context),
+            tooltip: 'Share Results',
+          ),
+        ],
+      ),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Research Topic
+              // Research Header with ID and Date
               Card(
+                color: Colors.blue[50],
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Medical Research Topic', 
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'RESEARCH REPORT',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                          Text(
+                            'ID: ${research.id.substring(0, 8)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
                       SizedBox(height: 8),
-                      Text(research.topic, 
-                          style: TextStyle(fontSize: 18, color: Colors.blue)),
+                      Text(
+                        research.topic,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[900],
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Generated: ${_formatDate(research.createdAt)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
               
-              SizedBox(height: 16),
-              
-              // Hypothesis
-              _buildSection('Research Hypothesis', research.hypothesis),
-              
-              // Methodology
-              _buildSection('Methodology', research.methodology),
-              
-              // Lab Results
-              _buildSection('Laboratory Results', research.labResults),
-              
-              // Analysis
-              _buildSection('Data Analysis', research.analysis),
-              
-              // Conclusion
-              _buildSection('Conclusion', research.conclusion),
-              
               SizedBox(height: 20),
               
+              // Research Sections with Icons
+              _buildSectionWithIcon(
+                'Hypothesis',
+                Icons.lightbulb_outline,
+                Colors.orange,
+                research.hypothesis,
+              ),
+              
+              _buildSectionWithIcon(
+                'Methodology', 
+                Icons.list_alt,
+                Colors.green,
+                research.methodology,
+              ),
+              
+              _buildSectionWithIcon(
+                'Lab Results',
+                Icons.biotech,
+                Colors.purple,
+                research.labResults,
+              ),
+              
+              _buildSectionWithIcon(
+                'Data Analysis',
+                Icons.analytics,
+                Colors.blue,
+                research.analysis,
+              ),
+              
+              _buildSectionWithIcon(
+                'Conclusion',
+                Icons.verified,
+                Colors.green,
+                research.conclusion,
+              ),
+              
+              SizedBox(height: 24),
+              
               // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _saveAsPDF(context);
-                      },
-                      icon: Icon(Icons.picture_as_pdf),
-                      label: Text('Save as PDF'),
-                    ),
+              _buildActionButtons(context),
+              
+              SizedBox(height: 16),
+              
+              // Footer Note
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[200]),
+                ),
+                child: Text(
+                  'This report was generated by AI Medical Research System. '
+                  'For medical advice, please consult healthcare professionals.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icon(Icons.arrow_back),
-                      label: Text('New Research'),
-                    ),
-                  ),
-                ],
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),
@@ -83,27 +149,105 @@ class ResultsScreen extends StatelessWidget {
     );
   }
   
-  Widget _buildSection(String title, String content) {
+  Widget _buildSectionWithIcon(String title, IconData icon, Color color, String content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 16),
-        Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 20, color: color),
+            ),
+            SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
         Card(
+          elevation: 2,
           child: Padding(
             padding: EdgeInsets.all(16),
-            child: Text(content, style: TextStyle(height: 1.5)),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.6,
+                color: Colors.grey[700],
+              ),
+            ),
           ),
         ),
       ],
     );
   }
   
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => _saveAsPDF(context),
+            icon: Icon(Icons.picture_as_pdf, size: 20),
+            label: Text('Save as PDF'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.add, size: 20),
+            label: Text('New Research'),
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+  
   void _saveAsPDF(BuildContext context) {
     // PDF save functionality
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('PDF report saved successfully')),
+      SnackBar(
+        content: Text('PDF report saved successfully'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+  
+  void _shareResults(BuildContext context) {
+    // Share functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Share functionality coming soon'),
+        backgroundColor: Colors.blue,
+      ),
     );
   }
 }
