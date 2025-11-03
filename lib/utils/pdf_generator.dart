@@ -15,24 +15,23 @@ class PDFGenerator {
     try {
       // PDF document بنائیں
       final pdf = pw.Document();
-      
+
       // PDF content language کے مطابق تیار کریں
       Map<String, String> headers = LanguageUtils.getPDFHeaders(language);
-      
+
       // PDF میں content شامل کریں
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
             return pw.Padding(
-              padding: pw.EdgeInsets.all(30),
+              padding: const pw.EdgeInsets.all(30),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  // Title - Center aligned
                   pw.Center(
                     child: pw.Text(
-                      headers['title']!,
+                      headers['title'] ?? 'Medical Research Report',
                       style: pw.TextStyle(
                         fontSize: 24,
                         fontWeight: pw.FontWeight.bold,
@@ -41,67 +40,22 @@ class PDFGenerator {
                     ),
                   ),
                   pw.SizedBox(height: 25),
-                  
-                  // Topic and Date
-                  pw.Container(
-                    width: double.infinity,
-                    padding: pw.EdgeInsets.all(15),
-                    decoration: pw.BoxDecoration(
-                      color: PdfColors.blue50,
-                      borderRadius: pw.BorderRadius.circular(8),
-                    ),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          '${headers['topic']!}: ${research.topic}',
-                          style: pw.TextStyle(
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 5),
-                        pw.Text(
-                          '${headers['date']!}: ${LanguageUtils.formatDate(research.createdAt, language)}',
-                          style: pw.TextStyle(fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
+
+                  _buildInfoBox(headers, research, language),
+
                   pw.SizedBox(height: 20),
-                  
-                  // Hypothesis Section
-                  _buildSection(
-                    title: headers['hypothesis']!,
-                    content: research.hypothesis,
-                  ),
+                  _buildSection(title: headers['hypothesis']!, content: research.hypothesis),
                   pw.SizedBox(height: 20),
-                  
-                  // Methodology Section
-                  _buildSection(
-                    title: headers['methodology']!,
-                    content: research.methodology,
-                  ),
+                  _buildSection(title: headers['methodology']!, content: research.methodology),
                   pw.SizedBox(height: 20),
-                  
-                  // Lab Results Section
-                  _buildSection(
-                    title: headers['labResults']!,
-                    content: research.labResults,
-                  ),
+                  _buildSection(title: headers['labResults']!, content: research.labResults),
                   pw.SizedBox(height: 20),
-                  
-                  // Conclusion Section
-                  _buildSection(
-                    title: headers['conclusion']!,
-                    content: research.conclusion,
-                  ),
+                  _buildSection(title: headers['conclusion']!, content: research.conclusion),
                   pw.SizedBox(height: 30),
-                  
-                  // Footer
+
                   pw.Center(
                     child: pw.Text(
-                      headers['footer']!,
+                      headers['footer'] ?? 'End of Report',
                       style: pw.TextStyle(
                         fontSize: 12,
                         fontStyle: pw.FontStyle.italic,
@@ -118,17 +72,44 @@ class PDFGenerator {
 
       // PDF save کریں
       final output = await getTemporaryDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = "medical_research_${research.id}_$language.pdf";
       final file = File("${output.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
 
       // Success message
       _showSuccessMessage(context, language, file.path, fileName);
-      
     } catch (e) {
       _showErrorMessage(context, e.toString());
     }
+  }
+
+  // Info section
+  static pw.Widget _buildInfoBox(Map<String, String> headers, MedicalResearch research, String language) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(15),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.blue50,
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            '${headers['topic']}: ${research.topic}',
+            style: pw.TextStyle(
+              fontSize: 16,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 5),
+          pw.Text(
+            '${headers['date']}: ${LanguageUtils.formatDate(research.createdAt, language)}',
+            style: pw.TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
+    );
   }
 
   // Section builder helper method
@@ -147,20 +128,21 @@ class PDFGenerator {
         pw.SizedBox(height: 8),
         pw.Container(
           width: double.infinity,
-          padding: pw.EdgeInsets.all(12),
+          padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
             border: pw.Border.all(color: PdfColors.grey300),
             borderRadius: pw.BorderRadius.circular(6),
           ),
           child: pw.Text(
             content,
-            style: pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
+            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
           ),
         ),
       ],
     );
   }
 
+  // ✅ Flutter UI message (no PDF widgets here)
   static void _showSuccessMessage(BuildContext context, String language, String filePath, String fileName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -168,21 +150,19 @@ class PDFGenerator {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('PDF کامیابی سے ڈاؤن لوڈ ہو گیا'),
+            const Text('PDF کامیابی سے بن گیا ✅'),
             Text(
               'زبان: ${LanguageUtils.getNativeLanguageName(language)}',
-              style: TextStyle(fontSize: 12, color: Colors.white70),
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ],
         ),
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
         action: SnackBarAction(
-          label: 'فائل دیکھیں',
+          label: 'دیکھیں',
           textColor: Colors.white,
           onPressed: () {
-            // فائل کھولنے کا logic
-            print('PDF saved at: $filePath');
             _showFileOptions(context, filePath, fileName);
           },
         ),
@@ -193,15 +173,14 @@ class PDFGenerator {
   static void _showFileOptions(BuildContext context, String filePath, String fileName) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('PDF فائل'),
-        content: Text('فائل کامیابی سے محفوظ ہو گئی: $fileName'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('PDF فائل'),
+        content: Text('فائل محفوظ ہو گئی:\n$fileName'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('بند کریں'),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('بند کریں'),
           ),
-          // بعد میں شئیر کا آپشن شامل کریں گے
         ],
       ),
     );
@@ -212,7 +191,7 @@ class PDFGenerator {
       SnackBar(
         content: Text('PDF بنانے میں مسئلہ: $error'),
         backgroundColor: Colors.red,
-        duration: Duration(seconds: 5),
+        duration: const Duration(seconds: 5),
       ),
     );
   }
