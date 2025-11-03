@@ -241,3 +241,72 @@ class ResultsScreen extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year} کو ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
   
+// نیا PDF Language Dialog Function
+void _showPDFLanguageDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildLanguageOption(context, 'english', 'English', '🇺🇸', Colors.blue),
+          _buildLanguageOption(context, 'urdu', 'اردو', '🇵🇰', Colors.green),
+          _buildLanguageOption(context, 'arabic', 'عربي', '🇸🇦', Colors.orange),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildLanguageOption(BuildContext context, String langCode, String language, String flag, Color color) {
+  return Card(
+    margin: EdgeInsets.symmetric(vertical: 6),
+    elevation: 2,
+    child: ListTile(
+      leading: Text(flag, style: TextStyle(fontSize: 20)),
+      title: Text(language, style: TextStyle(fontWeight: FontWeight.bold)),
+      tileColor: color.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      onTap: () {
+        Navigator.pop(context);
+        _generatePDF(context, langCode);
+      },
+    ),
+  );
+}
+
+void _generatePDF(BuildContext context, String language) async {
+  try {
+    await PDFGenerator.generatePDF(
+      research: research,
+      language: language,
+      context: context,
+    );
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('PDF کامیابی سے ڈاؤن لوڈ ہو گیا'),
+            Text(
+              'زبان: ${LanguageUtils.getNativeLanguageName(language)}',
+              style: TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 4),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('PDF ڈاؤن لوڈ میں مسئلہ: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
