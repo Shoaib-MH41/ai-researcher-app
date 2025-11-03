@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'research_screen.dart';
 import 'history_screen.dart';
 import 'admin_panel.dart';
+import 'research_lab_screen.dart';  // Naya import add karen
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -59,6 +60,12 @@ class HomeScreen extends StatelessWidget {
                     () => Navigator.push(context, MaterialPageRoute(builder: (context) => ResearchScreen())),
                   ),
                   _buildFeatureCard(
+                    'AI Lab',  // Naya button - AI Lab
+                    Icons.biotech,  // Naya icon
+                    Colors.red,  // Naya color
+                    () => Navigator.push(context, MaterialPageRoute(builder: (context) => ResearchLabScreen())),
+                  ),
+                  _buildFeatureCard(
                     'History', 
                     Icons.history,
                     Colors.orange,
@@ -69,6 +76,12 @@ class HomeScreen extends StatelessWidget {
                     Icons.description,
                     Colors.purple,
                     () => _showTemplates(context),
+                  ),
+                  _buildFeatureCard(
+                    'Admin',
+                    Icons.admin_panel_settings,
+                    Colors.blue,
+                    () => Navigator.push(context, MaterialPageRoute(builder: (context) => AdminPanel())),
                   ),
                   _buildFeatureCard(
                     'Settings',
@@ -88,7 +101,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildFeatureCard(String title, IconData icon, Color color, Function onTap) {
     return Card(
       child: InkWell(
-onTap: onTap as void Function()?,
+        onTap: onTap as void Function()?,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
