@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart'; // 🔹 For sharing
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
 import '../models/research_model.dart';
-import '../utils/pdf_generator.dart'; // نیا import شامل کریں
-import '../utils/language_utils.dart'; // نیا import شامل کریں
+import '../utils/pdf_generator.dart';
+import '../utils/language_utils.dart';
 
 class ResultsScreen extends StatelessWidget {
   final MedicalResearch research;
-  
+
   const ResultsScreen({Key? key, required this.research}) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +33,6 @@ class ResultsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Research Header with ID and Date
               Card(
                 color: Colors.blue[50],
                 child: Padding(
@@ -78,53 +81,24 @@ class ResultsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
               SizedBox(height: 20),
-              
-              // Research Sections with Icons
+
+              // Research Sections
+              _buildSectionWithIcon('مفروضہ', Icons.lightbulb_outline,
+                  Colors.orange, research.hypothesis),
               _buildSectionWithIcon(
-                'مفروضہ',
-                Icons.lightbulb_outline,
-                Colors.orange,
-                research.hypothesis,
-              ),
-              
-              _buildSectionWithIcon(
-                'طریقہ کار', 
-                Icons.list_alt,
-                Colors.green,
-                research.methodology,
-              ),
-              
-              _buildSectionWithIcon(
-                'لیب کے نتائج',
-                Icons.biotech,
-                Colors.purple,
-                research.labResults,
-              ),
-              
-              _buildSectionWithIcon(
-                'ڈیٹا کا تجزیہ',
-                Icons.analytics,
-                Colors.blue,
-                research.analysis,
-              ),
-              
-              _buildSectionWithIcon(
-                'نتیجہ',
-                Icons.verified,
-                Colors.green,
-                research.conclusion,
-              ),
-              
+                  'طریقہ کار', Icons.list_alt, Colors.green, research.methodology),
+              _buildSectionWithIcon('لیب کے نتائج', Icons.biotech, Colors.purple,
+                  research.labResults),
+              _buildSectionWithIcon('ڈیٹا کا تجزیہ', Icons.analytics, Colors.blue,
+                  research.analysis),
+              _buildSectionWithIcon('نتیجہ', Icons.verified, Colors.green,
+                  research.conclusion),
+
               SizedBox(height: 24),
-              
-              // Action Buttons
               _buildActionButtons(context),
-              
               SizedBox(height: 16),
-              
-              // Footer Note
+
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(12),
@@ -148,19 +122,18 @@ class ResultsScreen extends StatelessWidget {
           ),
         ),
       ),
-      
-      // نیا Floating Action Button for PDF
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showPDFLanguageDialog(context),
         child: Icon(Icons.picture_as_pdf, color: Colors.white),
         tooltip: 'PDF ڈاؤن لوڈ کریں',
         backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
       ),
     );
   }
-  
-  Widget _buildSectionWithIcon(String title, IconData icon, Color color, String content) {
+
+  // 🔹 Build Section Widget
+  Widget _buildSectionWithIcon(
+      String title, IconData icon, Color color, String content) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -204,7 +177,8 @@ class ResultsScreen extends StatelessWidget {
       ],
     );
   }
-  
+
+  // 🔹 Action Buttons
   Widget _buildActionButtons(BuildContext context) {
     return Row(
       children: [
@@ -223,9 +197,7 @@ class ResultsScreen extends StatelessWidget {
         SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.add, size: 20),
             label: Text('نئی تحقیق'),
             style: OutlinedButton.styleFrom(
@@ -236,77 +208,92 @@ class ResultsScreen extends StatelessWidget {
       ],
     );
   }
-  
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} کو ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
-  
-// نیا PDF Language Dialog Function
-void _showPDFLanguageDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildLanguageOption(context, 'english', 'English', '🇺🇸', Colors.blue),
-          _buildLanguageOption(context, 'urdu', 'اردو', '🇵🇰', Colors.green),
-          _buildLanguageOption(context, 'arabic', 'عربي', '🇸🇦', Colors.orange),
-        ],
-      ),
-    ),
-  );
-}
 
-Widget _buildLanguageOption(BuildContext context, String langCode, String language, String flag, Color color) {
-  return Card(
-    margin: EdgeInsets.symmetric(vertical: 6),
-    elevation: 2,
-    child: ListTile(
-      leading: Text(flag, style: TextStyle(fontSize: 20)),
-      title: Text(language, style: TextStyle(fontWeight: FontWeight.bold)),
-      tileColor: color.withOpacity(0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      onTap: () {
-        Navigator.pop(context);
-        _generatePDF(context, langCode);
-      },
-    ),
-  );
-}
-
-void _generatePDF(BuildContext context, String language) async {
-  try {
-    await PDFGenerator.generatePDF(
-      research: research,
-      language: language,
+  // 🔹 PDF Language Dialog
+  void _showPDFLanguageDialog(BuildContext context) {
+    showDialog(
       context: context,
-    );
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      builder: (context) => AlertDialog(
+        title: Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
         content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('PDF کامیابی سے ڈاؤن لوڈ ہو گیا'),
-            Text(
-              'زبان: ${LanguageUtils.getNativeLanguageName(language)}',
-              style: TextStyle(fontSize: 12, color: Colors.white70),
-            ),
+            _buildLanguageOption(context, 'english', 'English', '🇺🇸', Colors.blue),
+            _buildLanguageOption(context, 'urdu', 'اردو', '🇵🇰', Colors.green),
+            _buildLanguageOption(context, 'arabic', 'عربي', '🇸🇦', Colors.orange),
           ],
         ),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 4),
       ),
     );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('PDF ڈاؤن لوڈ میں مسئلہ: $e'),
-        backgroundColor: Colors.red,
+  }
+
+  Widget _buildLanguageOption(BuildContext context, String langCode,
+      String language, String flag, Color color) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      elevation: 2,
+      child: ListTile(
+        leading: Text(flag, style: TextStyle(fontSize: 20)),
+        title: Text(language, style: TextStyle(fontWeight: FontWeight.bold)),
+        tileColor: color.withOpacity(0.1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        onTap: () {
+          Navigator.pop(context);
+          _generatePDF(context, langCode);
+        },
       ),
     );
+  }
+
+  // 🔹 Generate PDF + Auto Share
+  Future<void> _generatePDF(BuildContext context, String language) async {
+    try {
+      final pdfFile = await PDFGenerator.generatePDF(
+        research: research,
+        language: language,
+        context: context,
+      );
+
+      if (pdfFile != null && File(pdfFile.path).existsSync()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF کامیابی سے ڈاؤن لوڈ ہو گیا!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // 🔥 Auto Share PDF
+        await Share.shareXFiles([XFile(pdfFile.path)],
+            text:
+                'AI میڈیکل ریسرچ رپورٹ (${LanguageUtils.getNativeLanguageName(language)})');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF ڈاؤن لوڈ میں مسئلہ: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 🔹 Text Share Button
+  void _shareResults(BuildContext context) {
+    final shareText = '''
+🔬 تحقیقاتی رپورٹ
+موضوع: ${research.topic}
+مفروضہ: ${research.hypothesis}
+نتیجہ: ${research.conclusion}
+📅 تاریخ: ${_formatDate(research.createdAt)}
+
+AI میڈیکل ریسرچ سسٹم کے ذریعے تیار کردہ
+''';
+
+    Share.share(shareText);
   }
 }
