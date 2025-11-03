@@ -3,6 +3,7 @@ import 'screens/home_screen.dart';
 import 'screens/research_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/admin_panel.dart';
+import 'screens/research_lab_screen.dart'; // Naya import add karen
 
 void main() {
   runApp(MyApp());
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/research': (context) => ResearchScreen(),
         '/history': (context) => HistoryScreen(),
         '/admin': (context) => AdminPanel(),
+        '/research_lab': (context) => ResearchLabScreen(), // Naya route add karen
       },
       debugShowCheckedModeBanner: false,
     );
