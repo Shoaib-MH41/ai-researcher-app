@@ -8,7 +8,7 @@ import '../models/research_model.dart';
 import 'language_utils.dart';
 
 class PDFGenerator {
-  static Future<void> generatePDF({
+  static Future<File?> generatePDF({
     required MedicalResearch research,
     required String language,
     required BuildContext context,
@@ -74,10 +74,13 @@ class PDFGenerator {
       final file = File("${output.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
 
-      // ✅ Success message with Share option
+      // ✅ Success message
       _showSuccessMessage(context, language, file.path, fileName);
+
+      return file; // ✅ یہ لائن سب سے اہم ہے (build error fix)
     } catch (e) {
       _showErrorMessage(context, e.toString());
+      return null; // ✅ fallback تاکہ null handle ہو سکے
     }
   }
 
@@ -207,4 +210,3 @@ class PDFGenerator {
     );
   }
 }
-
