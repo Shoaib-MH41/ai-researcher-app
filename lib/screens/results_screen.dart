@@ -16,19 +16,19 @@ class ResultsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('تحقیقات کے نتائج'),
+        title: const Text('تحقیقات کے نتائج'),
         backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: Icon(Icons.share),
+            icon: const Icon(Icons.share),
             onPressed: () => _shareResults(context),
             tooltip: 'نتائج شئیر کریں',
           ),
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,19 +36,19 @@ class ResultsScreen extends StatelessWidget {
               Card(
                 color: Colors.blue[50],
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             'تحقیقاتی رپورٹ',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
+                              color: Colors.blue,
                             ),
                           ),
                           Text(
@@ -60,16 +60,16 @@ class ResultsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         research.topic,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue[900],
+                          color: Colors.blueAccent,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'تاریخ تخلیق: ${_formatDate(research.createdAt)}',
                         style: TextStyle(
@@ -81,38 +81,58 @@ class ResultsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Research Sections
-              _buildSectionWithIcon('مفروضہ', Icons.lightbulb_outline,
-                  Colors.orange, research.hypothesis),
               _buildSectionWithIcon(
-                  'طریقہ کار', Icons.list_alt, Colors.green, research.methodology),
-              _buildSectionWithIcon('لیب کے نتائج', Icons.biotech, Colors.purple,
-                  research.labResults),
-              _buildSectionWithIcon('ڈیٹا کا تجزیہ', Icons.analytics, Colors.blue,
-                  research.analysis),
-              _buildSectionWithIcon('نتیجہ', Icons.verified, Colors.green,
-                  research.conclusion),
+                'مفروضہ',
+                Icons.lightbulb_outline,
+                Colors.orange,
+                research.hypothesis,
+              ),
+              _buildSectionWithIcon(
+                'طریقہ کار',
+                Icons.list_alt,
+                Colors.green,
+                research.methodology,
+              ),
+              _buildSectionWithIcon(
+                'لیب کے نتائج',
+                Icons.biotech,
+                Colors.purple,
+                research.labResults,
+              ),
+              _buildSectionWithIcon(
+                'ڈیٹا کا تجزیہ',
+                Icons.analytics,
+                Colors.blue,
+                research.analysis,
+              ),
+              _buildSectionWithIcon(
+                'نتیجہ',
+                Icons.verified,
+                Colors.green,
+                research.conclusion,
+              ),
 
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               _buildActionButtons(context),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
-                child: Text(
+                child: const Text(
                   'یہ رپورٹ AI میڈیکل ریسرچ سسٹم کے ذریعے تیار کی گئی ہے۔ '
                   'طبی مشورے کے لیے براہ کرم ہیلتھ کیئر پروفیشنلز سے رابطہ کریں۔',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: Colors.grey,
                     fontStyle: FontStyle.italic,
                   ),
                   textAlign: TextAlign.center,
@@ -124,46 +144,49 @@ class ResultsScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showPDFLanguageDialog(context),
-        child: Icon(Icons.picture_as_pdf, color: Colors.white),
-        tooltip: 'PDF ڈاؤن لوڈ کریں',
         backgroundColor: Colors.red,
+        tooltip: 'PDF ڈاؤن لوڈ کریں',
+        child: const Icon(Icons.picture_as_pdf, color: Colors.white),
       ),
     );
   }
 
-  // 🔹 Build Section Widget
+  // 🔹 Section Builder
   Widget _buildSectionWithIcon(
-      String title, IconData icon, Color color, String content) {
+    String title,
+    IconData icon,
+    Color color,
+    String content,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Row(
           children: [
             Container(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 20, color: color),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
               ),
             ),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Card(
           elevation: 2,
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Text(
               content,
               style: TextStyle(
@@ -185,23 +208,23 @@ class ResultsScreen extends StatelessWidget {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () => _showPDFLanguageDialog(context),
-            icon: Icon(Icons.picture_as_pdf, size: 20),
-            label: Text('PDF محفوظ کریں'),
+            icon: const Icon(Icons.picture_as_pdf, size: 20),
+            label: const Text('PDF محفوظ کریں'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.add, size: 20),
-            label: Text('نئی تحقیق'),
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text('نئی تحقیق'),
             style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
@@ -218,7 +241,7 @@ class ResultsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
+        title: const Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -231,19 +254,24 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLanguageOption(BuildContext context, String langCode,
-      String language, String flag, Color color) {
+  Widget _buildLanguageOption(
+    BuildContext context,
+    String langCode,
+    String language,
+    String flag,
+    Color color,
+  ) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.symmetric(vertical: 6),
       elevation: 2,
       child: ListTile(
-        leading: Text(flag, style: TextStyle(fontSize: 20)),
-        title: Text(language, style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: Text(flag, style: const TextStyle(fontSize: 20)),
+        title: Text(language, style: const TextStyle(fontWeight: FontWeight.bold)),
         tileColor: color.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        onTap: () {
+        onTap: () async {
           Navigator.pop(context);
-          _generatePDF(context, langCode);
+          await _generatePDF(context, langCode);
         },
       ),
     );
@@ -252,15 +280,16 @@ class ResultsScreen extends StatelessWidget {
   // 🔹 Generate PDF + Auto Share
   Future<void> _generatePDF(BuildContext context, String language) async {
     try {
-      final pdfFile = await PDFGenerator.generatePDF(
+      // 🔸 اب generatePDF ایک File ریٹرن کرتا ہے
+      final File pdfFile = await PDFGenerator.generatePDF(
         research: research,
         language: language,
         context: context,
       );
 
-      if (pdfFile != null && File(pdfFile.path).existsSync()) {
+      if (await pdfFile.exists()) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('PDF کامیابی سے ڈاؤن لوڈ ہو گیا!'),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
@@ -268,9 +297,10 @@ class ResultsScreen extends StatelessWidget {
         );
 
         // 🔥 Auto Share PDF
-        await Share.shareXFiles([XFile(pdfFile.path)],
-            text:
-                'AI میڈیکل ریسرچ رپورٹ (${LanguageUtils.getNativeLanguageName(language)})');
+        await Share.shareXFiles(
+          [XFile(pdfFile.path)],
+          text: 'AI میڈیکل ریسرچ رپورٹ (${LanguageUtils.getNativeLanguageName(language)})',
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +323,6 @@ class ResultsScreen extends StatelessWidget {
 
 AI میڈیکل ریسرچ سسٹم کے ذریعے تیار کردہ
 ''';
-
     Share.share(shareText);
   }
 }
