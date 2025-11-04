@@ -1,4 +1,4 @@
-name: Build Medical Research APK
+name: Build AI Researcher APK
 
 on:
   push:
@@ -22,32 +22,42 @@ jobs:
       - name: 🐦 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2'
+          flutter-version: '3.19.5'
           channel: 'stable'
 
-      - name: 📦 Install dependencies
+      # ✅ Ensure Android structure
+      - name: 🔧 Ensure valid Android project
+        run: |
+          if [ ! -d android ]; then
+            echo "📁 android folder missing — creating fresh..."
+            flutter create --project-name ai_researcher_app .
+          else
+            echo "♻️ Re-creating android folder to fix Gradle issues..."
+            rm -rf android
+            flutter create --project-name ai_researcher_app .
+          fi
+
+      # 🧹 Clean previous build files
+      - name: 🧹 Clean build cache
+        run: flutter clean
+
+      # 📦 Get dependencies
+      - name: 📦 Get dependencies
         run: flutter pub get
 
-      - name: 🧱 Ensure Gradle SDK versions
-        run: |
-          echo "📱 Updating minSdkVersion to 26..."
-          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 26/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
-          echo "✅ SDK versions updated."
-
+      # 🚀 Build release APK
       - name: 🚀 Build release APK
         run: |
-          flutter clean
           flutter build apk --release --no-tree-shake-icons
-          echo "✅ Build finished. Checking all .apk files..."
-          find build/ -type f -name "*.apk" || echo "⚠️ No APK found!"
+          echo "✅ Build complete. Searching for APK..."
+          find build/ -type f -name "*.apk"
 
-      - name: 📤 Upload built APK (auto-detect)
+      # 📤 Upload APK (auto-detect path)
+      - name: 📤 Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: medical_research_app-release
+          name: ai_researcher_app-release
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/apk/release/app-release.apk
-            build/**/app-release.apk
             **/*.apk
