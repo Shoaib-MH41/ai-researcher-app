@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/medical_research_service.dart';
+import '../services/gemini_service.dart'; // GeminiService import کریں
 import 'results_screen.dart';
 
 class ResearchScreen extends StatefulWidget {
@@ -12,7 +13,9 @@ class ResearchScreen extends StatefulWidget {
 class _ResearchScreenState extends State<ResearchScreen> {
   final TextEditingController _topicController = TextEditingController();
   final MedicalResearchService _researchService = MedicalResearchService();
+  final GeminiService _geminiService = GeminiService(); // نیا GeminiService
   bool _isLoading = false;
+  bool _isAILoading = false; // نیا AI لوڈنگ اسٹیٹ
   String _selectedCategory = '';
 
   // میڈیکل کیٹیگریز
@@ -40,6 +43,14 @@ class _ResearchScreenState extends State<ResearchScreen> {
         title: const Text('میڈیکل تحقیق'),
         backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
+        actions: [
+          // AI سائنسدان کا بٹن
+          IconButton(
+            icon: Icon(Icons.smart_toy),
+            onPressed: _navigateToAILab,
+            tooltip: 'AI سائنسدان لیب',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -70,6 +81,58 @@ class _ResearchScreenState extends State<ResearchScreen> {
                           Text('• میڈیکل تحقیق کا موضوع درج کریں'),
                           Text('• کیٹیگری منتخب کریں (اختیاری)'),
                           Text('• تحقیق شروع کریں'),
+                          Text('• AI سائنسدان کے ساتھ جدید تحقیق کریں'),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // AI سائنسدان کارڈ - نیا addition
+                  Card(
+                    color: Colors.purple[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.science, color: Colors.purple),
+                              SizedBox(width: 8),
+                              Text(
+                                'AI سائنسدان',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple[700],
+                                  fontSize: 18
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'جدید AI ٹیکنالوجی کے ساتھ مکمل سائنسی تحقیق کریں۔',
+                            style: TextStyle(color: Colors.purple[600]),
+                          ),
+                          SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _isAILoading ? null : _startAIResearch,
+                              icon: Icon(_isAILoading ? Icons.hourglass_empty : Icons.psychology),
+                              label: Text(
+                                _isAILoading ? 
+                                'AI سائنسدان کام کر رہا ہے...' : 
+                                'AI سائنسدان کے ساتھ تحقیق کریں',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.purple,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -136,17 +199,8 @@ class _ResearchScreenState extends State<ResearchScreen> {
 
                   const SizedBox(height: 20),
 
-                  if (_isLoading)
-                    const Column(
-                      children: [
-                        Center(child: CircularProgressIndicator()),
-                        SizedBox(height: 16),
-                        Text(
-                          'AI میڈیکل تحقیق کر رہا ہے...',
-                          style: TextStyle(color: Colors.blue),
-                        ),
-                      ],
-                    )
+                  if (_isLoading || _isAILoading)
+                    _buildLoadingIndicator()
                   else
                     _buildMedicalExamples(),
                 ],
@@ -173,6 +227,37 @@ class _ResearchScreenState extends State<ResearchScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // نیا لوڈنگ انڈیکیٹر
+  Widget _buildLoadingIndicator() {
+    return Column(
+      children: [
+        Center(
+          child: Column(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                _isAILoading ? 
+                '🔬 AI سائنسدان تحقیقی مراحل کر رہا ہے...' : 
+                'AI میڈیکل تحقیق کر رہا ہے...',
+                style: TextStyle(color: Colors.blue),
+                textAlign: TextAlign.center,
+              ),
+              if (_isAILoading) ...[
+                SizedBox(height: 8),
+                Text(
+                  '• ڈیٹا تجزیہ\n• لیب ٹیسٹنگ\n• شماریاتی انسائٹس\n• طبی سفارشات',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -248,6 +333,63 @@ class _ResearchScreenState extends State<ResearchScreen> {
     return examples[category] ?? '$category کا نیا علاج';
   }
 
+  // ========== نیا AI سائنسدان فنکشن ==========
+  
+  Future<void> _startAIResearch() async {
+    if (_topicController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
+      );
+      return;
+    }
+
+    setState(() => _isAILoading = true);
+
+    try {
+      // GeminiService کا نیا method استعمال کریں
+      final aiResearch = await _geminiService.conductAIScientificResearch(
+        _topicController.text,
+        'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
+      );
+      
+      setState(() => _isAILoading = false);
+
+      if (!mounted) return;
+      
+      // Results screen پر AI research بھیجیں
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsScreen(
+            research: aiResearch,
+            isAIResearch: true, // نیا parameter
+          ),
+        ),
+      );
+      
+    } catch (e) {
+      setState(() => _isAILoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('AI تحقیق میں مسئلہ آیا: $e')),
+      );
+    }
+  }
+
+  // AI لیب اسکرین پر navigate کرنے کا فنکشن
+  void _navigateToAILab() {
+    // آپ research_lab_screen.dart کو اپ ڈیٹ کریں گے
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => ResearchLabScreen()),
+    // );
+    
+    // فی الحال ایک message دکھائیں
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('AI سائنسدان لیب جلد دستیاب ہوگا')),
+    );
+  }
+
+  // پرانا research method (تبدیلی کے بغیر)
   Future<void> _startResearch() async {
     if (_topicController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -267,7 +409,12 @@ class _ResearchScreenState extends State<ResearchScreen> {
       
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ResultsScreen(research: research)),
+        MaterialPageRoute(
+          builder: (context) => ResultsScreen(
+            research: research,
+            isAIResearch: false, // پرانی تحقیق
+          ),
+        ),
       );
       
     } catch (e) {
