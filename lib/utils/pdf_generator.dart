@@ -8,85 +8,97 @@ import '../models/research_model.dart';
 import 'language_utils.dart';
 
 class PDFGenerator {
-  // ✅ اب یہ Future<File> واپس کرے گا
   static Future<File> generatePDF({
     required MedicalResearch research,
     required String language,
     required BuildContext context,
   }) async {
     try {
-      // 📘 PDF بنائیں
       final pdf = pw.Document();
+
+      // ✅ Load fonts dynamically
+      final urduFont = pw.Font.ttf(await rootBundle.load("assets/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf"));
+      final arabicFont = pw.Font.ttf(await rootBundle.load("assets/fonts/Amiri-Regular.ttf"));
+      final englishFont = pw.Font.ttf(await rootBundle.load("assets/fonts/OpenSans-VariableFont_wdth,wght.ttf"));
+
+      pw.Font selectedFont;
+
+      switch (language.toLowerCase()) {
+        case 'urdu':
+          selectedFont = urduFont;
+          break;
+        case 'arabic':
+          selectedFont = arabicFont;
+          break;
+        default:
+          selectedFont = englishFont;
+      }
+
       Map<String, String> headers = LanguageUtils.getPDFHeaders(language);
 
       pdf.addPage(
-        pw.Page(
+        pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          build: (pw.Context context) {
-            return pw.Padding(
-              padding: const pw.EdgeInsets.all(30),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Center(
-                    child: pw.Text(
-                      headers['title'] ?? 'Medical Research Report',
-                      style: pw.TextStyle(
-                        fontSize: 24,
-                        fontWeight: pw.FontWeight.bold,
-                        color: PdfColors.blue800,
-                      ),
-                    ),
-                  ),
-                  pw.SizedBox(height: 25),
-
-                  _buildInfoBox(headers, research, language),
-
-                  pw.SizedBox(height: 20),
-                  _buildSection(title: headers['hypothesis']!, content: research.hypothesis),
-                  pw.SizedBox(height: 20),
-                  _buildSection(title: headers['methodology']!, content: research.methodology),
-                  pw.SizedBox(height: 20),
-                  _buildSection(title: headers['labResults']!, content: research.labResults),
-                  pw.SizedBox(height: 20),
-                  _buildSection(title: headers['conclusion']!, content: research.conclusion),
-                  pw.SizedBox(height: 30),
-
-                  pw.Center(
-                    child: pw.Text(
-                      headers['footer'] ?? 'End of Report',
-                      style: pw.TextStyle(
-                        fontSize: 12,
-                        fontStyle: pw.FontStyle.italic,
-                        color: PdfColors.grey600,
-                      ),
-                    ),
-                  ),
-                ],
+          margin: const pw.EdgeInsets.all(30),
+          build: (pw.Context context) => [
+            pw.Center(
+              child: pw.Text(
+                headers['title'] ?? 'Medical Research Report',
+                style: pw.TextStyle(
+                  font: selectedFont,
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.blue800,
+                ),
               ),
-            );
-          },
+            ),
+            pw.SizedBox(height: 25),
+
+            _buildInfoBox(headers, research, selectedFont, language),
+
+            pw.SizedBox(height: 20),
+            _buildSection(headers['hypothesis']!, research.hypothesis, selectedFont),
+            pw.SizedBox(height: 20),
+            _buildSection(headers['methodology']!, research.methodology, selectedFont),
+            pw.SizedBox(height: 20),
+            _buildSection(headers['labResults']!, research.labResults, selectedFont),
+            pw.SizedBox(height: 20),
+            _buildSection(headers['conclusion']!, research.conclusion, selectedFont),
+            pw.SizedBox(height: 30),
+
+            pw.Center(
+              child: pw.Text(
+                headers['footer'] ?? 'End of Report',
+                style: pw.TextStyle(
+                  font: selectedFont,
+                  fontSize: 12,
+                  fontStyle: pw.FontStyle.italic,
+                  color: PdfColors.grey600,
+                ),
+              ),
+            ),
+          ],
         ),
       );
 
-      // 📂 PDF save کریں
+      // 📂 Save PDF
       final output = await getTemporaryDirectory();
       final fileName = "medical_research_${research.id}_$language.pdf";
       final file = File("${output.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
 
-      // ✅ Success message with Share option
+      // ✅ Show success with Share
       _showSuccessMessage(context, language, file.path, fileName);
 
-      return file; // ✅ PDF فائل واپس کریں
+      return file;
     } catch (e) {
       _showErrorMessage(context, e.toString());
-      rethrow; // ⚠️ اگر error آئے تو آگے بھیج دو
+      rethrow;
     }
   }
 
-  // ℹ️ Info box
-  static pw.Widget _buildInfoBox(Map<String, String> headers, MedicalResearch research, String language) {
+  // ℹ️ Info Box
+  static pw.Widget _buildInfoBox(Map<String, String> headers, MedicalResearch research, pw.Font font, String language) {
     return pw.Container(
       width: double.infinity,
       padding: const pw.EdgeInsets.all(15),
@@ -99,15 +111,12 @@ class PDFGenerator {
         children: [
           pw.Text(
             '${headers['topic']}: ${research.topic}',
-            style: pw.TextStyle(
-              fontSize: 16,
-              fontWeight: pw.FontWeight.bold,
-            ),
+            style: pw.TextStyle(font: font, fontSize: 16, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 5),
           pw.Text(
             '${headers['date']}: ${LanguageUtils.formatDate(research.createdAt, language)}',
-            style: pw.TextStyle(fontSize: 14),
+            style: pw.TextStyle(font: font, fontSize: 14),
           ),
         ],
       ),
@@ -115,13 +124,14 @@ class PDFGenerator {
   }
 
   // 📖 Section layout
-  static pw.Widget _buildSection({required String title, required String content}) {
+  static pw.Widget _buildSection(String title, String content, pw.Font font) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text(
           title,
           style: pw.TextStyle(
+            font: font,
             fontSize: 18,
             fontWeight: pw.FontWeight.bold,
             color: PdfColors.blue700,
@@ -137,14 +147,14 @@ class PDFGenerator {
           ),
           child: pw.Text(
             content,
-            style: const pw.TextStyle(fontSize: 14, lineSpacing: 1.5),
+            style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 1.5),
           ),
         ),
       ],
     );
   }
 
-  // ✅ Show success with SHARE option
+  // ✅ Success Message
   static void _showSuccessMessage(BuildContext context, String language, String filePath, String fileName) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -164,15 +174,13 @@ class PDFGenerator {
         action: SnackBarAction(
           label: 'دیکھیں/شیئر کریں',
           textColor: Colors.white,
-          onPressed: () {
-            _showFileOptions(context, filePath, fileName);
-          },
+          onPressed: () => _showFileOptions(context, filePath, fileName),
         ),
       ),
     );
   }
 
-  // 📤 File Options Dialog
+  // 📤 File Options
   static void _showFileOptions(BuildContext context, String filePath, String fileName) {
     showDialog(
       context: context,
@@ -185,22 +193,16 @@ class PDFGenerator {
             label: const Text('شیئر کریں'),
             onPressed: () async {
               Navigator.pop(ctx);
-              await Share.shareXFiles(
-                [XFile(filePath)],
-                text: 'میری میڈیکل ریسرچ رپورٹ: $fileName',
-              );
+              await Share.shareXFiles([XFile(filePath)], text: 'میری میڈیکل ریسرچ رپورٹ: $fileName');
             },
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('بند کریں'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('بند کریں')),
         ],
       ),
     );
   }
 
-  // ❌ Error Message
+  // ❌ Error
   static void _showErrorMessage(BuildContext context, String error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
