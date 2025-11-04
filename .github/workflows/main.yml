@@ -25,27 +25,23 @@ jobs:
           flutter-version: '3.22.2'
           channel: 'stable'
 
-      # ✅ Ensure valid Android project & fix Gradle automatically
-      - name: 🔧 Ensure valid Android structure
-        run: |
-          if [ ! -d android ]; then
-            echo "⚙️ Android folder missing — creating..."
-            flutter create --project-name medical_research_app .
-          else
-            echo "♻️ Rebuilding Android folder to ensure Gradle compatibility..."
-            rm -rf android
-            flutter create --project-name medical_research_app .
-          fi
-
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: 🧩 Verify icons & assets
+      # ✅ Ensure Gradle compatible SDK version
+      - name: 🔧 Fix minSdkVersion
         run: |
-          if [ -d "assets/icons" ]; then
-            echo "✅ Icons folder found."
+          echo "📱 Updating minSdkVersion to 26 in build.gradle..."
+          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 26/' android/app/build.gradle
+          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle
+          echo "✅ SDK versions updated successfully."
+
+      - name: 🧩 Verify assets & fonts
+        run: |
+          if [ -d "assets/fonts" ]; then
+            echo "✅ Fonts found."
           else
-            echo "⚠️ No icons folder found — continuing without app icon."
+            echo "⚠️ Fonts missing — please add assets/fonts folder."
           fi
 
       - name: 🚀 Build release APK
