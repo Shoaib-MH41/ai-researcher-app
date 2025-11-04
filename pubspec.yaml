@@ -33,7 +33,6 @@ dependencies:
 
   # 🧠 (Optional future AI APIs)
   google_generative_ai: ^0.3.0
-  tflite_flutter: ^0.10.4
 
   # 🗓️ Date & Localization
   intl: ^0.17.0     # ✅ یہ لازمی add کرنا ہے
