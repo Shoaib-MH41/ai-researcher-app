@@ -2,43 +2,42 @@ name: Build Flutter APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.2'  # ✅ Correct stable version
-          channel: 'stable'
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.2'
 
-      - name: Flutter doctor
-        run: flutter doctor -v
+    - name: Install dependencies
+      run: flutter pub get
 
-      - name: Flutter clean
-        run: flutter clean
+    - name: Generate key.properties for release build
+      run: |
+        echo "storePassword=android" > android/key.properties
+        echo "keyPassword=android" >> android/key.properties
+        echo "keyAlias=androiddebugkey" >> android/key.properties
+        echo "storeFile=debug.keystore" >> android/key.properties
 
-      - name: Get dependencies
-        run: flutter pub get
+    - name: Build APK
+      run: flutter build apk --release
 
-      - name: Build release APK
-        run: flutter build apk --release
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: medical-research-app
-          path: build/app/outputs/flutter-apk/app-release.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: medical-research-app
+        path: build/app/outputs/flutter-apk/app-release.apk
