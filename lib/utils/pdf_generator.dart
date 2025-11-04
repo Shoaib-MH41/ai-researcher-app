@@ -3,12 +3,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
-import 'package:share_plus/share_plus.dart'; // ✅ نیا import (شیئرنگ کیلئے)
+import 'package:share_plus/share_plus.dart';
 import '../models/research_model.dart';
 import 'language_utils.dart';
 
 class PDFGenerator {
-  static Future<File?> generatePDF({
+  // ✅ اب یہ Future<File> واپس کرے گا
+  static Future<File> generatePDF({
     required MedicalResearch research,
     required String language,
     required BuildContext context,
@@ -74,13 +75,13 @@ class PDFGenerator {
       final file = File("${output.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
 
-      // ✅ Success message
+      // ✅ Success message with Share option
       _showSuccessMessage(context, language, file.path, fileName);
 
-      return file; // ✅ یہ لائن سب سے اہم ہے (build error fix)
+      return file; // ✅ PDF فائل واپس کریں
     } catch (e) {
       _showErrorMessage(context, e.toString());
-      return null; // ✅ fallback تاکہ null handle ہو سکے
+      rethrow; // ⚠️ اگر error آئے تو آگے بھیج دو
     }
   }
 
