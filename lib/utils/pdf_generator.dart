@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/services.dart' show rootBundle; // ⭐ یہ نئی لائن ضرور add کریں
 import '../models/research_model.dart';
 import 'language_utils.dart';
 
