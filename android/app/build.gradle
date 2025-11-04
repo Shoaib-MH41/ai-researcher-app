@@ -6,10 +6,9 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-// Flutter SDK path (for GitHub CI)
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    flutterRoot = System.getenv("FLUTTER_HOME") ?: "../flutter"
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
@@ -20,33 +19,11 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    namespace "com.shoaib.medical_research_app" // ✅ Better namespace (unique)
+    namespace "com.shoaib.medical_research_app"
     compileSdkVersion 34
-    ndkVersion "25.1.8937393"
 
-    signingConfigs {
-        debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-        release {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-        }
-    }
-
-    defaultConfig {
-        applicationId "com.shoaib.medical_research_app" // ✅ Match namespace
-        minSdkVersion 26 // ✅ Fixed for tflite_flutter
-        targetSdkVersion 34
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-        multiDexEnabled true // ✅ Helps with large dependencies
-    }
+    // 🔥 REMOVE ndkVersion - Let Flutter handle it automatically
+    // ndkVersion "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -61,14 +38,21 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    defaultConfig {
+        applicationId "com.shoaib.medical_research_app"
+        minSdkVersion 21  // 🔥 Change back to 21 (tflite_flutter removed)
+        targetSdkVersion 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // 🔥 SIMPLIFIED - Use debug signing for CI
+            signingConfig signingConfigs.debug
             minifyEnabled false
             shrinkResources false
-        }
-        debug {
-            signingConfig signingConfigs.debug
         }
     }
 
@@ -84,5 +68,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.multidex:multidex:2.0.1'  // 🔥 Add multidex
 }
-
