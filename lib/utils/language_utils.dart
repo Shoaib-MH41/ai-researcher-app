@@ -100,7 +100,7 @@ class LanguageUtils {
     }
   }
 
-  // ✅ Text Direction (RTL / LTR)
+  // ✅ Text Direction (RTL / LTR) — UI میں استعمال کیلئے
   static TextDirection getTextDirection(String language) {
     switch (language.toLowerCase()) {
       case 'urdu':
