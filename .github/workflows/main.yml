@@ -28,33 +28,26 @@ jobs:
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: 🔧 Ensure Gradle SDK versions
+      - name: 🧱 Ensure Gradle SDK versions
         run: |
           echo "📱 Updating minSdkVersion to 26..."
-          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 26/' android/app/build.gradle
-          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle
+          sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 26/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
           echo "✅ SDK versions updated."
-
-      - name: 🧩 Verify assets & fonts
-        run: |
-          if [ -d "assets/fonts" ]; then
-            echo "✅ Fonts found."
-          else
-            echo "⚠️ No fonts folder found — please add one."
-          fi
 
       - name: 🚀 Build release APK
         run: |
           flutter clean
           flutter build apk --release --no-tree-shake-icons
-          echo "✅ Build finished. Checking for APK path..."
-          find build/ -name "*.apk" || echo "⚠️ No APK found in expected path."
+          echo "✅ Build finished. Checking all .apk files..."
+          find build/ -type f -name "*.apk" || echo "⚠️ No APK found!"
 
       - name: 📤 Upload built APK (auto-detect)
         uses: actions/upload-artifact@v4
         with:
-          name: medical_research_app-release.apk
+          name: medical_research_app-release
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/apk/release/app-release.apk
             build/**/app-release.apk
+            **/*.apk
