@@ -13,7 +13,7 @@ dependencies:
 
   # 🧭 UI & Icons
   cupertino_icons: ^1.0.8
-  flutter_material_color_picker: ^1.2.0  # (optional: advanced UI color options)
+  flutter_material_color_picker: ^1.2.0  # optional: advanced color picker
 
   # 🔐 Secure storage (for saved data / tokens)
   flutter_secure_storage: ^9.2.2
@@ -24,8 +24,8 @@ dependencies:
   path_provider: ^2.1.4
 
   # 📤 File Sharing & Opening
-  share_plus: ^10.0.2     # ✅ Share PDF files
-  open_filex: ^4.5.0      # ✅ Open PDF in default viewer
+  share_plus: ^10.0.2      # ✅ Share PDF files
+  open_filex: ^4.5.0       # ✅ Open PDF in default viewer
 
   # 🌐 Network & AI integration
   http: ^1.2.2
@@ -33,7 +33,7 @@ dependencies:
 
   # 🧠 (Optional future AI APIs)
   google_generative_ai: ^0.3.0     # Gemini integration (optional)
-  tflite_flutter: ^0.10.4          # For on-device AI models (optional)
+  tflite_flutter: ^0.10.4          # On-device AI models (optional)
 
 dev_dependencies:
   flutter_test:
@@ -43,13 +43,17 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # ✅ Fonts (for Urdu/Arabic PDF support)
+  # ✅ Fonts & Assets for PDF (Urdu / Arabic / English)
   assets:
     - assets/fonts/
+
   fonts:
     - family: NotoNastaliqUrdu
       fonts:
-        - asset: assets/fonts/NotoNastaliqUrdu-Regular.ttf
-    - family: Roboto
+        - asset: assets/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf
+    - family: Amiri
       fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Amiri-Regular.ttf
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans-VariableFont_wdth,wght.ttf
