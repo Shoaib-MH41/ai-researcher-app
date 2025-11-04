@@ -1,4 +1,4 @@
-name: Build AI Researcher APK
+name: Build Flutter APK
 
 on:
   push:
@@ -10,50 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: ☕ Set up Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🐦 Set up Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'
+          flutter-version: '3.19.5'
           channel: 'stable'
 
-      # ✅ Ensure Android structure
-      - name: 🔧 Ensure valid Android project
+      # 🧹 Clean caches to fix old Gradle/manifest issues
+      - name: Clear old Gradle and pub cache
         run: |
-          if [ ! -d android ]; then
-            echo "📁 android folder missing — creating fresh..."
-            flutter create --project-name ai_researcher_app .
-          else
-            echo "♻️ Re-creating android folder to fix Gradle issues..."
-            rm -rf android
-            flutter create --project-name ai_researcher_app .
-          fi
+          rm -rf ~/.pub-cache
+          rm -rf ~/.gradle
 
-      # 🧹 Clean previous build files
-      - name: 🧹 Clean build cache
+      # 🧹 Flutter clean
+      - name: Flutter clean
         run: flutter clean
 
+      # ✅ Ensure Android folder exists and is updated
+      - name: Ensure valid Android project
+        run: |
+          if [ ! -d android ]; then
+            flutter create --project-name ai_researcher_app .
+          else
+            echo "Android folder exists, continuing..."
+          fi
+
       # 📦 Get dependencies
-      - name: 📦 Get dependencies
+      - name: Get dependencies
         run: flutter pub get
 
-      # 🚀 Build release APK
-      - name: 🚀 Build release APK
-        run: |
-          flutter build apk --release --no-tree-shake-icons
-          echo "✅ Build complete. Searching for APK..."
-          find build/ -type f -name "*.apk"
+      # 🏗️ Build release APK
+      - name: Build release APK
+        run: flutter build apk --release --no-tree-shake-icons
 
-      # 📤 Upload APK (auto-detect path)
-      - name: 📤 Upload APK
+      # 📤 Upload APK artifact (handle multiple possible paths)
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ai_researcher_app-release
@@ -61,3 +61,4 @@ jobs:
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/apk/release/app-release.apk
             **/*.apk
+
