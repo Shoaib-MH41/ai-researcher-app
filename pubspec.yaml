@@ -13,9 +13,9 @@ dependencies:
 
   # 🧭 UI & Icons
   cupertino_icons: ^1.0.8
-  flutter_material_color_picker: ^1.2.0  # optional: advanced color picker
+  flutter_material_color_picker: ^1.2.0
 
-  # 🔐 Secure storage (for saved data / tokens)
+  # 🔐 Secure storage
   flutter_secure_storage: ^9.2.2
 
   # 📄 PDF generation & printing
@@ -24,16 +24,19 @@ dependencies:
   path_provider: ^2.1.4
 
   # 📤 File Sharing & Opening
-  share_plus: ^10.0.2      # ✅ Share PDF files
-  open_filex: ^4.5.0       # ✅ Open PDF in default viewer
+  share_plus: ^10.0.2
+  open_filex: ^4.5.0
 
   # 🌐 Network & AI integration
   http: ^1.2.2
   provider: ^6.1.2
 
   # 🧠 (Optional future AI APIs)
-  google_generative_ai: ^0.3.0     # Gemini integration (optional)
-  tflite_flutter: ^0.10.4          # On-device AI models (optional)
+  google_generative_ai: ^0.3.0
+  tflite_flutter: ^0.10.4
+
+  # 🗓️ Date & Localization
+  intl: ^0.17.0     # ✅ یہ لازمی add کرنا ہے
 
 dev_dependencies:
   flutter_test:
@@ -43,9 +46,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # ✅ Fonts & Assets for PDF (Urdu / Arabic / English)
+  # ✅ Fonts & Assets for PDF
   assets:
-    - assets/fonts/
+    - assets/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf
+    - assets/fonts/Amiri-Regular.ttf
+    - assets/fonts/OpenSans-VariableFont_wdth,wght.ttf
 
   fonts:
     - family: NotoNastaliqUrdu
