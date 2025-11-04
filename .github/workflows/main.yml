@@ -2,42 +2,59 @@ name: Build Flutter APK
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.22.2'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.5'
+          channel: 'stable'
 
-    - name: Install dependencies
-      run: flutter pub get
+      # ✅ Android project کو مکمل regenerate کریں
+      - name: Recreate Android project
+        run: |
+          echo "🧹 Removing old Android files..."
+          rm -rf android
+          echo "🔄 Creating fresh Android project..."
+          flutter create --org com.shoaib --project-name medical_research_app .
 
-    - name: Generate key.properties for release build
-      run: |
-        echo "storePassword=android" > android/key.properties
-        echo "keyPassword=android" >> android/key.properties
-        echo "keyAlias=androiddebugkey" >> android/key.properties
-        echo "storeFile=debug.keystore" >> android/key.properties
+      - name: Get dependencies
+        run: flutter pub get
 
-    - name: Build APK
-      run: flutter build apk --release
+      # ✅ Gradle cache clear کریں
+      - name: Clean Gradle cache
+        run: |
+          cd android
+          ./gradlew clean
+          cd ..
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: medical-research-app
-        path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Build release APK
+        run: flutter build apk --release --no-tree-shake-icons
+
+      # ✅ APK کو verify کریں
+      - name: Verify APK
+        run: |
+          echo "📁 Checking for APK files..."
+          find . -name "*.apk" -type f
+          ls -la build/app/outputs/flutter-apk/
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: medical-research-app
+          path: build/app/outputs/flutter-apk/app-release.apk
