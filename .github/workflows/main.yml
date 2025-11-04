@@ -22,43 +22,23 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: '3.22.2'  # ✅ Correct stable version
           channel: 'stable'
 
-      # 🧹 Clean caches to fix old Gradle/manifest issues
-      - name: Clear old Gradle and pub cache
-        run: |
-          rm -rf ~/.pub-cache
-          rm -rf ~/.gradle
+      - name: Flutter doctor
+        run: flutter doctor -v
 
-      # 🧹 Flutter clean
       - name: Flutter clean
         run: flutter clean
 
-      # ✅ Ensure Android folder exists and is updated
-      - name: Ensure valid Android project
-        run: |
-          if [ ! -d android ]; then
-            flutter create --project-name ai_researcher_app .
-          else
-            echo "Android folder exists, continuing..."
-          fi
-
-      # 📦 Get dependencies
       - name: Get dependencies
         run: flutter pub get
 
-      # 🏗️ Build release APK
       - name: Build release APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: flutter build apk --release
 
-      # 📤 Upload APK artifact (handle multiple possible paths)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ai_researcher_app-release
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/apk/release/app-release.apk
-            **/*.apk
-
+          name: medical-research-app
+          path: build/app/outputs/flutter-apk/app-release.apk
