@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 import '../ai_trio/trio_orchestrator.dart';
-import '../services/report_ai.dart'; // ReportAI کے لیے import شامل کریں
-// import 'package:share_plus/share_plus.dart'; // اگر شیئر کرنا ہو تو
+import '../services/report_ai.dart';
 
 class DiscoveryScreen extends StatefulWidget {
   final String medicalProblem;
@@ -14,8 +15,10 @@ class DiscoveryScreen extends StatefulWidget {
 
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   String _currentStatus = 'تحقیقات شروع ہو رہی ہیں...';
-  int _currentAttempt = 1;
+  int _currentAttempt = 0;
+  int _totalAttempts = 3;
   bool _isLoading = true;
+  bool _isGeneratingPDF = false; // نیا: PDF کے لیے
   Map<String, dynamic>? _finalResult;
   List<String> _progressLog = [];
 
@@ -25,20 +28,30 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _startResearchProcess();
   }
 
+  // ========== تحقیق شروع کریں ==========
   Future<void> _startResearchProcess() async {
     _addToLog('AI ٹرائیو تحقیقاتی عمل شروع کیا جا رہا ہے...');
-    
-    final result = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
-    
-    setState(() {
-      _isLoading = false;
-      _finalResult = result;
-      _currentStatus = result['status'] == 'success' 
-          ? 'تحقیق کامیاب!' 
-          : 'تحقیق مکمل (مسائل ہیں)';
-    });
-    
-    _addToLog(_currentStatus);
+
+    try {
+      final result = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
+
+      setState(() {
+        _isLoading = false;
+        _finalResult = result;
+        _currentAttempt = result['attempts'] ?? 1;
+        _currentStatus = result['status'] == 'success'
+            ? 'تحقیق کامیاب!'
+            : 'تحقیق مکمل (مزید کوشش درکار)';
+      });
+
+      _addToLog(_currentStatus);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _currentStatus = 'خطا: $e';
+      });
+      _addToLog('خطا: $e');
+    }
   }
 
   void _addToLog(String message) {
@@ -51,7 +64,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('AI ٹرائیو ریسرچ لیب'),
+        title: const Text('AI ٹرائیو ریسرچ لیب'),
         backgroundColor: Colors.deepPurple[800],
         foregroundColor: Colors.white,
       ),
@@ -60,63 +73,74 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         child: Column(
           children: [
             // مریض کا مسئلہ
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('مریض کا مسئلہ:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    Text(widget.medicalProblem, style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ),
-            ),
+            _buildProblemCard(),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // تحقیقاتی سٹیٹس
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(_currentStatus, 
-                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
-                         color: _getStatusColor())),
-                    SizedBox(height: 10),
-                    if (_isLoading) LinearProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('تحقیقاتی دور: $_currentAttempt/3'),
-                  ],
-                ),
-              ),
-            ),
+            _buildStatusCard(),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-            // AI ٹرائیو کی معلومات
+            // AI ٹرائیو ٹیم
             _buildAITrioInfo(),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-            // تحقیقاتی لاگ
-            Expanded(
-              child: _buildProgressLog(),
-            ),
+            // لاگ
+            Expanded(child: _buildProgressLog()),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-            // اگر نتیجہ آگیا ہے
-            if (_finalResult != null) 
-              _buildFinalResult(),
+            // نتیجہ
+            if (_finalResult != null) _buildFinalResult(),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // ایکشن بٹن
-            if (!_isLoading)
-              _buildActionButtons(),
+            if (!_isLoading) _buildActionButtons(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ========== UI Widgets ==========
+  Widget _buildProblemCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('مریض کا مسئلہ:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(widget.medicalProblem, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Text(
+              _currentStatus,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: _getStatusColor(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (_isLoading || _isGeneratingPDF)
+              const LinearProgressIndicator(),
+            const SizedBox(height: 10),
+            Text('تحقیقاتی دور: $_currentAttempt/$_totalAttempts'),
           ],
         ),
       ),
@@ -125,7 +149,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Color _getStatusColor() {
     if (_currentStatus.contains('کامیاب')) return Colors.green;
-    if (_currentStatus.contains('مسائل')) return Colors.orange;
+    if (_currentStatus.contains('خطا') || _currentStatus.contains('مسئلہ')) return Colors.red;
+    if (_currentStatus.contains('مکمل')) return Colors.orange;
     return Colors.blue;
   }
 
@@ -136,15 +161,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Row(
+            const Row(
               children: [
                 Icon(Icons.groups, color: Colors.blue),
                 SizedBox(width: 8),
-                Text('AI ٹرائیو ٹیم', 
-                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('AI ٹرائیو ٹیم', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             _buildAIInfo('ریسرچ AI', 'نیا علاج دریافت کرتا ہے', Colors.blue),
             _buildAIInfo('لیب ٹیسٹنگ AI', 'علاج کی جانچ کرتا ہے', Colors.green),
             _buildAIInfo('رپورٹ AI', 'مکمل رپورٹ تیار کرتا ہے', Colors.purple),
@@ -154,28 +178,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  Widget _buildAIInfo(String name, String description, Color color) {
+  Widget _buildAIInfo(String name, String desc, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(name.split(' ')[0]),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(color: color.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
+            child: Text(name[0]),
           ),
-          SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(description, style: TextStyle(color: Colors.grey[600])),
-          ),
+          const SizedBox(width: 12),
+          Expanded(flex: 2, child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text(desc, style: TextStyle(color: Colors.grey[600]))),
         ],
       ),
     );
@@ -188,26 +203,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
                 Icon(Icons.list_alt, color: Colors.grey),
                 SizedBox(width: 8),
                 Text('تحقیقاتی لاگ', style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
                 itemCount: _progressLog.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      _progressLog[index],
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    ),
-                  );
-                },
+                itemBuilder: (context, i) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(_progressLog[i], style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                ),
               ),
             ),
           ],
@@ -217,11 +227,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   }
 
   Widget _buildFinalResult() {
-    final result = _finalResult!;
-    final isSuccess = result['status'] == 'success';
-    
+    final r = _finalResult!;
+    final success = r['status'] == 'success';
+
     return Card(
-      color: isSuccess ? Colors.green[50] : Colors.orange[50],
+      color: success ? Colors.green[50] : Colors.orange[50],
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -229,23 +239,22 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           children: [
             Row(
               children: [
-                Icon(isSuccess ? Icons.check_circle : Icons.warning,
-                     color: isSuccess ? Colors.green : Colors.orange),
-                SizedBox(width: 8),
+                Icon(success ? Icons.check_circle : Icons.warning, color: success ? Colors.green : Colors.orange),
+                const SizedBox(width: 8),
                 Text(
-                  isSuccess ? 'علاج دریافت ہو گیا!' : 'مزید تحقیق کی ضرورت',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  success ? 'علاج دریافت ہو گیا!' : 'مزید تحقیق کی ضرورت',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            Text(result['message']),
-            SizedBox(height: 10),
-            Text('کل تحقیقاتی دور: ${result['attempts']}'),
-            if (isSuccess) ...[
-              SizedBox(height: 10),
-              Text('دریافت شدہ علاج: ${result['treatment_name']}'),
-              Text('اعتماد کی سطح: ${(result['confidence'] * 100).toStringAsFixed(1)}%'),
+            const SizedBox(height: 10),
+            Text(r['message'] ?? ''),
+            const SizedBox(height: 10),
+            Text('کل تحقیقاتی دور: ${r['attempts']}'),
+            if (success) ...[
+              const SizedBox(height: 10),
+              Text('دریافت شدہ علاج: ${r['treatment_name']}'),
+              Text('اعتماد کی سطح: ${(r['confidence'] * 100).toStringAsFixed(1)}%'),
             ],
           ],
         ),
@@ -253,113 +262,98 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  // ========== نیا اپڈیٹڈ ایکشن بٹن ==========
+  // ========== ایکشن بٹن ==========
   Widget _buildActionButtons() {
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {
-              _showReportDialog();
-            },
-            icon: Icon(Icons.visibility),
-            label: Text('رپورٹ دیکھیں'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              foregroundColor: Colors.white,
-            ),
+            onPressed: _showReportDialog,
+            icon: const Icon(Icons.visibility),
+            label: const Text('رپورٹ دیکھیں'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {
-              _showPDFLanguageDialog();
-            },
-            icon: Icon(Icons.picture_as_pdf),
-            label: Text('PDF ڈاؤن لوڈ'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
+            onPressed: _isGeneratingPDF ? null : _showPDFLanguageDialog,
+            icon: const Icon(Icons.picture_as_pdf),
+            label: Text(_isGeneratingPDF ? 'تیار ہو رہا...' : 'PDF ڈاؤن لوڈ'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
           ),
         ),
       ],
     );
   }
 
-  // ========== نیا: PDF زبان ڈائیلاگ ==========
+  // ========== PDF زبان کا انتخاب ==========
   void _showPDFLanguageDialog() {
-    if (_finalResult == null) return;
-    
+    if (_finalResult?['final_report'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رپورٹ نہیں ملی')));
+      return;
+    }
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
+      builder: (_) => AlertDialog(
+        title: const Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildLanguageOption(context, 'english', 'English', 'US', Colors.blue),
-            _buildLanguageOption(context, 'urdu', 'اردو', 'PK', Colors.green),
-            _buildLanguageOption(context, 'arabic', 'عربي', 'SA', Colors.orange),
+            _buildLangOption('english', 'English', 'US', Colors.blue),
+            _buildLangOption('urdu', 'اردو', 'PK', Colors.green),
+            _buildLangOption('arabic', 'عربي', 'SA', Colors.orange),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLanguageOption(
-    BuildContext context,
-    String langCode,
-    String language,
-    String flag,
-    Color color,
-  ) {
+  Widget _buildLangOption(String code, String name, String flag, Color color) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      elevation: 2,
       child: ListTile(
         leading: Text(flag, style: const TextStyle(fontSize: 20)),
-        title: Text(language, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
         tileColor: color.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        onTap: () async {
-          Navigator.pop(context); // ڈائیلاگ بند کریں
-          await _generateAIPDF(langCode);
+        onTap: () {
+          Navigator.pop(context);
+          _generateAIPDF(code);
         },
       ),
     );
   }
 
-  // ========== PDF جنریشن ==========
+  // ========== PDF جنریشن + شیئر ==========
   Future<void> _generateAIPDF(String language) async {
-    if (_finalResult == null) return;
-    
     setState(() {
-      _isLoading = true;
+      _isGeneratingPDF = true;
       _currentStatus = 'PDF تیار ہو رہا ہے ($language)...';
     });
 
     try {
-      final pdfFilePath = await ReportAI.generatePDFReport(
-        _finalResult!['final_report'],
-        language,
-      );
+      final report = _finalResult!['final_report'];
+      final pdfPath = await ReportAI.generatePDFReport(report, language);
 
       setState(() {
-        _isLoading = false;
+        _isGeneratingPDF = false;
         _currentStatus = 'PDF تیار!';
       });
 
-      if (pdfFilePath.isNotEmpty) {
+      if (pdfPath.isNotEmpty && await File(pdfPath).exists()) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('PDF کامیابی سے تیار! فائل: $pdfFilePath'),
+            content: const Text('PDF تیار ہو گیا!'),
             backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'شیئر',
-              onPressed: () {
-                // await Share.shareXFiles([XFile(pdfFilePath)]);
+              onPressed: () async {
+                await Share.shareXFiles(
+                  [XFile(pdfPath)],
+                  text: 'AI ٹرائیو رپورٹ: ${report['patient_problem']}',
+                );
               },
             ),
           ),
@@ -367,47 +361,34 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        _isGeneratingPDF = false;
         _currentStatus = 'PDF میں خرابی';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('PDF بنانے میں مسئلہ: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا: $e'), backgroundColor: Colors.red));
     }
   }
 
-  // ========== رپورٹ ڈائیلاگ (پہلے سے موجود) ==========
+  // ========== رپورٹ ڈائیلاگ ==========
   void _showReportDialog() {
-    if (_finalResult == null) return;
-    
     final report = _finalResult!['final_report'];
-    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('تحقیقاتی رپورٹ'),
+      builder: (_) => AlertDialog(
+        title: const Text('تحقیقاتی رپورٹ'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('رپورٹ ID: ${report['report_id']}', 
-                   style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              Text(report['executive_summary']),
-              SizedBox(height: 10),
-              Text('آخری سفارش: ${report['final_recommendation']}',
-                   style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('رپورٹ ID: ${report['report_id']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Text(report['executive_summary'] ?? ''),
+              const SizedBox(height: 10),
+              Text('سفارش: ${report['final_recommendation']}', style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('بند کریں'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('بند کریں')),
         ],
       ),
     );
