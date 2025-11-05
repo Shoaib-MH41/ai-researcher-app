@@ -3,7 +3,8 @@ import 'screens/home_screen.dart';
 import 'screens/research_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/admin_panel.dart';
-import 'screens/research_lab_screen.dart'; // Naya import add karen
+import 'screens/research_lab_screen.dart';
+import 'screens/discovery_screen.dart'; // نیا ڈسکوری اسکرین import
 
 void main() {
   runApp(MyApp());
@@ -19,12 +20,16 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Roboto',
         appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue,
+          backgroundColor: Colors.blue[800],
           foregroundColor: Colors.white,
           elevation: 2,
           centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        cardTheme: CardThemeData(
+        cardTheme: CardTheme(
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -37,6 +42,11 @@ class MyApp extends StatelessWidget {
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.blue[800],
+          foregroundColor: Colors.white,
+          elevation: 4,
+        ),
       ),
       initialRoute: '/home',
       routes: {
@@ -44,7 +54,8 @@ class MyApp extends StatelessWidget {
         '/research': (context) => ResearchScreen(),
         '/history': (context) => HistoryScreen(),
         '/admin': (context) => AdminPanel(),
-        '/research_lab': (context) => ResearchLabScreen(), // Naya route add karen
+        '/research_lab': (context) => ResearchLabScreen(),
+        '/discovery': (context) => DiscoveryScreen(medicalProblem: ''), // نیا ڈسکوری روٹ
       },
       debugShowCheckedModeBanner: false,
     );
