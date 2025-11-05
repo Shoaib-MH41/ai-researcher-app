@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/medical_research_service.dart';
 import '../services/gemini_service.dart';
 import 'results_screen.dart';
+import 'discovery_screen.dart'; // نئی اسکرین کا import شامل کیا
 
 class ResearchScreen extends StatefulWidget {
   const ResearchScreen({super.key});
@@ -202,6 +203,44 @@ class _ResearchScreenState extends State<ResearchScreen> {
                     _buildLoadingIndicator()
                   else
                     _buildMedicalExamples(),
+
+                  // ========== نیا AI ٹرائیو ریسرچ کارڈ شامل ==========
+                  const SizedBox(height: 20),
+                  Card(
+                    color: Colors.deepPurple[50],
+                    child: ListTile(
+                      leading: Icon(Icons.groups, color: Colors.deepPurple, size: 30),
+                      title: Text(
+                        'AI ٹرائیو ریسرچ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        'تین AI مل کر نیا علاج دریافت کریں گے\n'
+                        '• ریسرچ AI + لیب AI + رپورٹ AI',
+                        style: TextStyle(color: Colors.deepPurple[700]),
+                      ),
+                      trailing: Icon(Icons.arrow_forward, color: Colors.deepPurple),
+                      onTap: () {
+                        if (_topicController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('براہ کرم مریض کا مسئلہ درج کریں')),
+                          );
+                          return;
+                        }
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DiscoveryScreen(
+                              medicalProblem: _topicController.text,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // ========== ختم ==========
+
                 ],
               ),
             ),
@@ -240,7 +279,7 @@ class _ResearchScreenState extends State<ResearchScreen> {
               SizedBox(height: 16),
               Text(
                 _isAILoading ? 
-                '🔬 AI سائنسدان تحقیقی مراحل کر رہا ہے...' : 
+                'AI سائنسدان تحقیقی مراحل کر رہا ہے...' : 
                 'AI میڈیکل تحقیق کر رہا ہے...',
                 style: TextStyle(color: Colors.blue),
                 textAlign: TextAlign.center,
@@ -345,7 +384,6 @@ class _ResearchScreenState extends State<ResearchScreen> {
     setState(() => _isAILoading = true);
 
     try {
-      // MedicalResearchService کا نیا method استعمال کریں
       final aiResearchResult = await _researchService.conductAIScientificResearch(
         _topicController.text,
         'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
@@ -355,14 +393,13 @@ class _ResearchScreenState extends State<ResearchScreen> {
 
       if (!mounted) return;
       
-      // درست ResultsScreen constructor استعمال کریں
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ResultsScreen(
-            research: aiResearchResult['medical_research'], // AI سے بنی میڈیکل ریسرچ
-            isAIResearch: true, // AI تحقیق کی نشاندہی
-            aiResearchData: aiResearchResult['ai_research'], // AI سائنسدان کا ڈیٹا
+            research: aiResearchResult['medical_research'],
+            isAIResearch: true,
+            aiResearchData: aiResearchResult['ai_research'],
           ),
         ),
       );
@@ -399,7 +436,7 @@ class _ResearchScreenState extends State<ResearchScreen> {
         MaterialPageRoute(
           builder: (context) => ResultsScreen(
             research: research,
-            isAIResearch: false, // عام تحقیق
+            isAIResearch: false,
           ),
         ),
       );
@@ -414,7 +451,6 @@ class _ResearchScreenState extends State<ResearchScreen> {
 
   // AI لیب اسکرین پر navigate کرنے کا فنکشن
   void _navigateToAILab() {
-    // فی الحال ایک message دکھائیں
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('AI سائنسدان لیب جلد دستیاب ہوگا')),
     );
