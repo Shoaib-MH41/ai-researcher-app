@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
-import '../ai_trio/trio_orchestrator.dart';
-import '../services/report_ai.dart';
+import '../ai_trio/trio_orchestrator.dart';  // ✅ درست
+import '../ai_trio/report_ai.dart';          // ✅ درست - ai_trio فولڈر سے
 
 class DiscoveryScreen extends StatefulWidget {
   final String medicalProblem;
@@ -19,7 +18,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   int _currentAttempt = 0;
   int _totalAttempts = 3;
   bool _isLoading = true;
-  bool _isGeneratingPDF = false; // نیا: PDF کے لیے
+  bool _isGeneratingPDF = false;
   Map<String, dynamic>? _finalResult;
   List<String> _progressLog = [];
 
@@ -29,7 +28,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _startResearchProcess();
   }
 
-  // ========== تحقیق شروع کریں ==========
   Future<void> _startResearchProcess() async {
     _addToLog('AI ٹرائیو تحقیقاتی عمل شروع کیا جا رہا ہے...');
 
@@ -73,32 +71,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // مریض کا مسئلہ
             _buildProblemCard(),
-
             const SizedBox(height: 16),
-
-            // تحقیقاتی سٹیٹس
             _buildStatusCard(),
-
             const SizedBox(height: 16),
-
-            // AI ٹرائیو ٹیم
             _buildAITrioInfo(),
-
             const SizedBox(height: 16),
-
-            // لاگ
             Expanded(child: _buildProgressLog()),
-
             const SizedBox(height: 16),
-
-            // نتیجہ
             if (_finalResult != null) _buildFinalResult(),
-
             const SizedBox(height: 16),
-
-            // ایکشن بٹن
             if (!_isLoading) _buildActionButtons(),
           ],
         ),
@@ -106,7 +88,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  // ========== UI Widgets ==========
   Widget _buildProblemCard() {
     return Card(
       child: Padding(
@@ -215,9 +196,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             Expanded(
               child: ListView.builder(
                 itemCount: _progressLog.length,
-                itemBuilder: (context, i) => Padding(
+                itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(_progressLog[i], style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  child: Text(_progressLog[index], style: TextStyle(fontSize: 12, color: Colors.grey[700])),
                 ),
               ),
             ),
@@ -228,11 +209,17 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   }
 
   Widget _buildFinalResult() {
-    final r = _finalResult!;
-    final success = r['status'] == 'success';
+    final result = _finalResult!;
+    final isSuccess = result['status'] == 'success';
+    
+    // Null-safe access
+    final message = result['message'] ?? 'کوئی پیغام نہیں';
+    final attempts = result['attempts'] ?? 0;
+    final treatmentName = result['treatment_name'] ?? 'دریافت شدہ علاج';
+    final confidence = result['confidence'] ?? 0.0;
 
     return Card(
-      color: success ? Colors.green[50] : Colors.orange[50],
+      color: isSuccess ? Colors.green[50] : Colors.orange[50],
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -240,22 +227,23 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           children: [
             Row(
               children: [
-                Icon(success ? Icons.check_circle : Icons.warning, color: success ? Colors.green : Colors.orange),
+                Icon(isSuccess ? Icons.check_circle : Icons.warning, 
+                     color: isSuccess ? Colors.green : Colors.orange),
                 const SizedBox(width: 8),
                 Text(
-                  success ? 'علاج دریافت ہو گیا!' : 'مزید تحقیق کی ضرورت',
+                  isSuccess ? 'علاج دریافت ہو گیا!' : 'مزید تحقیق کی ضرورت',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            Text(r['message'] ?? ''),
+            Text(message),
             const SizedBox(height: 10),
-            Text('کل تحقیقاتی دور: ${r['attempts']}'),
-            if (success) ...[
+            Text('کل تحقیقاتی دور: $attempts'),
+            if (isSuccess) ...[
               const SizedBox(height: 10),
-              Text('دریافت شدہ علاج: ${r['treatment_name']}'),
-              Text('اعتماد کی سطح: ${(r['confidence'] * 100).toStringAsFixed(1)}%'),
+              Text('دریافت شدہ علاج: $treatmentName'),
+              Text('اعتماد کی سطح: ${(confidence * 100).toStringAsFixed(1)}%'),
             ],
           ],
         ),
@@ -263,7 +251,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  // ========== ایکشن بٹن ==========
   Widget _buildActionButtons() {
     return Row(
       children: [
@@ -272,7 +259,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             onPressed: _showReportDialog,
             icon: const Icon(Icons.visibility),
             label: const Text('رپورٹ دیکھیں'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple, 
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -281,39 +272,45 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             onPressed: _isGeneratingPDF ? null : _showPDFLanguageDialog,
             icon: const Icon(Icons.picture_as_pdf),
             label: Text(_isGeneratingPDF ? 'تیار ہو رہا...' : 'PDF ڈاؤن لوڈ'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red, 
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
         ),
       ],
     );
   }
 
-  // ========== PDF زبان کا انتخاب ==========
   void _showPDFLanguageDialog() {
-    if (_finalResult?['final_report'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('رپورٹ نہیں ملی')));
+    if (_finalResult == null || _finalResult!['final_report'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے'))
+      );
       return;
     }
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildLangOption('english', 'English', 'US', Colors.blue),
-            _buildLangOption('urdu', 'اردو', 'PK', Colors.green),
-            _buildLangOption('arabic', 'عربي', 'SA', Colors.orange),
+            _buildLanguageOption('english', 'English', '🇺🇸', Colors.blue),
+            _buildLanguageOption('urdu', 'اردو', '🇵🇰', Colors.green),
+            _buildLanguageOption('arabic', 'عربي', '🇸🇦', Colors.orange),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLangOption(String code, String name, String flag, Color color) {
+  Widget _buildLanguageOption(String code, String name, String flag, Color color) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
+      elevation: 2,
       child: ListTile(
         leading: Text(flag, style: const TextStyle(fontSize: 20)),
         title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -327,8 +324,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  // ========== PDF جنریشن + شیئر ==========
   Future<void> _generateAIPDF(String language) async {
+    if (_finalResult == null || _finalResult!['final_report'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('رپورٹ ڈیٹا دستیاب نہیں ہے'))
+      );
+      return;
+    }
+
     setState(() {
       _isGeneratingPDF = true;
       _currentStatus = 'PDF تیار ہو رہا ہے ($language)...';
@@ -336,25 +339,39 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
     try {
       final report = _finalResult!['final_report'];
-      final pdfPath = await ReportAI.generatePDFReport(report, language);
+      
+      // ReportAI.generatePDFReport method کو call کریں
+      final pdfPath = await ReportAI.generatePDFReport(
+        report: report,
+        language: language,
+        context: context,
+      );
 
       setState(() {
         _isGeneratingPDF = false;
-        _currentStatus = 'PDF تیار!';
+        _currentStatus = 'PDF تیار ہو گیا!';
       });
 
-      if (pdfPath.isNotEmpty && await File(pdfPath).exists()) {
+      if (pdfPath.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('PDF تیار ہو گیا!'),
+            content: const Text('PDF کامیابی سے تیار ہو گیا!'),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
             action: SnackBarAction(
               label: 'شیئر',
+              textColor: Colors.white,
               onPressed: () async {
-                await Share.shareXFiles(
-                  [XFile(pdfPath)],
-                  text: 'AI ٹرائیو رپورٹ: ${report['patient_problem']}',
-                );
+                try {
+                  await Share.shareXFiles(
+                    [XFile(pdfPath)],
+                    text: 'AI ٹرائیو تحقیقاتی رپورٹ - ${report['patient_problem'] ?? "طبی تحقیق"}',
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('شیئر کرنے میں مسئلہ: $e'))
+                  );
+                }
               },
             ),
           ),
@@ -363,33 +380,50 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     } catch (e) {
       setState(() {
         _isGeneratingPDF = false;
-        _currentStatus = 'PDF میں خرابی';
+        _currentStatus = 'PDF بنانے میں مسئلہ';
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطا: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF جنریشن میں مسئلہ: $e'),
+          backgroundColor: Colors.red,
+        )
+      );
     }
   }
 
-  // ========== رپورٹ ڈائیلاگ ==========
   void _showReportDialog() {
+    if (_finalResult == null || _finalResult!['final_report'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے'))
+      );
+      return;
+    }
+
     final report = _finalResult!['final_report'];
+    
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('تحقیقاتی رپورٹ'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('رپورٹ ID: ${report['report_id']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text('رپورٹ ID: ${report['report_id'] ?? "N/A"}', 
+                   style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              Text(report['executive_summary'] ?? ''),
+              Text(report['executive_summary'] ?? 'خلاصہ دستیاب نہیں'),
               const SizedBox(height: 10),
-              Text('سفارش: ${report['final_recommendation']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text('سفارش: ${report['final_recommendation'] ?? "سفارش دستیاب نہیں"}', 
+                   style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('بند کریں')),
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text('بند کریں')
+          ),
         ],
       ),
     );
