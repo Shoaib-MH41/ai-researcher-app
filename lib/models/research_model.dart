@@ -1,3 +1,5 @@
+// models/medical_research.dart
+
 class MedicalResearch {
   final String id;
   final String topic;
@@ -8,8 +10,9 @@ class MedicalResearch {
   final String conclusion;
   final String pdfReport;
   final DateTime createdAt;
-  final bool isAIResearch; // نیا field شامل کریں
-  
+  final bool isAIResearch; // نیا: AI سے تحقیق؟
+  final Map<String, dynamic>? aiDiscoveryData; // نیا: 3 AI کا مکمل ڈیٹا
+
   MedicalResearch({
     required this.id,
     required this.topic,
@@ -20,10 +23,28 @@ class MedicalResearch {
     required this.conclusion,
     required this.pdfReport,
     required this.createdAt,
-    this.isAIResearch = false, // ڈیفالٹ false رکھیں
+    this.isAIResearch = false,
+    this.aiDiscoveryData,
   });
 
-  // JSON serialization methods کو اپ ڈیٹ کریں
+  // JSON → Object
+  factory MedicalResearch.fromJson(Map<String, dynamic> json) {
+    return MedicalResearch(
+      id: json['id'] as String,
+      topic: json['topic'] as String,
+      hypothesis: json['hypothesis'] as String,
+      methodology: json['methodology'] as String,
+      labResults: json['labResults'] as String,
+      analysis: json['analysis'] as String,
+      conclusion: json['conclusion'] as String,
+      pdfReport: json['pdfReport'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      isAIResearch: json['isAIResearch'] as bool? ?? false,
+      aiDiscoveryData: json['aiDiscoveryData'] as Map<String, dynamic>?,
+    );
+  }
+
+  // Object → JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -35,26 +56,12 @@ class MedicalResearch {
       'conclusion': conclusion,
       'pdfReport': pdfReport,
       'createdAt': createdAt.toIso8601String(),
-      'isAIResearch': isAIResearch, // نیا field شامل کریں
+      'isAIResearch': isAIResearch,
+      'aiDiscoveryData': aiDiscoveryData,
     };
   }
 
-  factory MedicalResearch.fromJson(Map<String, dynamic> json) {
-    return MedicalResearch(
-      id: json['id'],
-      topic: json['topic'],
-      hypothesis: json['hypothesis'],
-      methodology: json['methodology'],
-      labResults: json['labResults'],
-      analysis: json['analysis'],
-      conclusion: json['conclusion'],
-      pdfReport: json['pdfReport'],
-      createdAt: DateTime.parse(json['createdAt']),
-      isAIResearch: json['isAIResearch'] ?? false, // نیا field - ڈیفالٹ false
-    );
-  }
-
-  // Optional: CopyWith method اگر آپ چاہیں تو
+  // Optional: copyWith for immutability
   MedicalResearch copyWith({
     String? id,
     String? topic,
@@ -66,6 +73,7 @@ class MedicalResearch {
     String? pdfReport,
     DateTime? createdAt,
     bool? isAIResearch,
+    Map<String, dynamic>? aiDiscoveryData,
   }) {
     return MedicalResearch(
       id: id ?? this.id,
@@ -78,6 +86,7 @@ class MedicalResearch {
       pdfReport: pdfReport ?? this.pdfReport,
       createdAt: createdAt ?? this.createdAt,
       isAIResearch: isAIResearch ?? this.isAIResearch,
+      aiDiscoveryData: aiDiscoveryData ?? this.aiDiscoveryData,
     );
   }
 }
