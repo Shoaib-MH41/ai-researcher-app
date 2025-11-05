@@ -1,7 +1,9 @@
 import '../models/research_model.dart';
 import 'local_storage_service.dart';
+import 'gemini_service.dart'; // نیا addition
 
 class MedicalResearchService {
+  final GeminiService _geminiService = GeminiService(); // نیا addition
   
   // میڈیکل مخصوص تحقیقاتی طریقے
   Future<MedicalResearch> conductMedicalResearch(String medicalTopic) async {
@@ -29,6 +31,138 @@ class MedicalResearchService {
     
     return research;
   }
+
+  // ========== نیا AI سائنسدان ریسرچ میتھڈ ==========
+  
+  Future<Map<String, dynamic>> conductAIScientificResearch(String medicalTopic, String researchData) async {
+    // GeminiService کے نئے method کو استعمال کریں
+    final aiResearch = await _geminiService.conductAIScientificResearch(medicalTopic, researchData);
+    
+    // AI ریسرچ کو میڈیکل ریسرچ میں تبدیل کریں
+    final medicalResearch = await _convertAIResearchToMedicalResearch(aiResearch, medicalTopic);
+    
+    // دونوں ڈیٹا واپس کریں
+    return {
+      'ai_research': aiResearch,
+      'medical_research': medicalResearch,
+      'success': true,
+      'timestamp': DateTime.now(),
+    };
+  }
+  
+  // AI ریسرچ کو میڈیکل ریسرچ میں تبدیل کرنے کا میتھڈ
+  Future<MedicalResearch> _convertAIResearchToMedicalResearch(
+    Map<String, dynamic> aiResearch, 
+    String topic
+  ) async {
+    final researchSummary = aiResearch['research_summary'] ?? {};
+    
+    // AI ڈیٹا کو میڈیکل ریسرچ میں مپ کریں
+    final research = MedicalResearch(
+      id: 'AI_${DateTime.now().millisecondsSinceEpoch}',
+      topic: topic,
+      hypothesis: researchSummary['ai_analysis']?.toString() ?? _generateMedicalHypothesis(topic),
+      methodology: _generateClinicalMethodology(topic),
+      labResults: _formatAILabResults(researchSummary['lab_findings']),
+      analysis: _formatAIAnalysis(researchSummary['statistical_insights']),
+      conclusion: researchSummary['medical_recommendations']?.toString() ?? _generateMedicalConclusion(topic),
+      pdfReport: _generateAIRreport(aiResearch, topic),
+      createdAt: DateTime.now(),
+      isAIResearch: true, // نیا field - AI تحقیق کی نشاندہی
+    );
+    
+    // AI ریسرچ کو بھی محفوظ کریں
+    await LocalStorageService.saveResearch(research);
+    
+    return research;
+  }
+  
+  // AI لیب رزلٹس کو فارمیٹ کریں
+  String _formatAILabResults(dynamic labFindings) {
+    if (labFindings is Map) {
+      return '''
+AI لیبارٹری ٹیسٹ کے نتائج:
+
+انجام دیے گئے ٹیسٹس: ${labFindings['lab_tests_performed']?.join(', ') ?? 'N/A'}
+کل نتائج: ${labFindings['results'] ?? 'N/A'}
+اعتماد کی سطح: ${labFindings['confidence_level'] ?? 'N/A'}
+تجاویز: ${labFindings['recommendations'] ?? 'N/A'}
+
+یہ نتائج AI سائنسدان سسٹم کے ذریعے جنریٹ کیے گئے ہیں۔
+''';
+    }
+    return labFindings?.toString() ?? _generateMedicalLabResults('عام');
+  }
+  
+  // AI تجزیہ کو فارمیٹ کریں
+  String _formatAIAnalysis(dynamic statisticalInsights) {
+    if (statisticalInsights is Map) {
+      return '''
+AI شماریاتی تجزیہ:
+
+نمونہ کا سائز: ${statisticalInsights['sample_size'] ?? 'N/A'}
+اعتماد کا وقفہ: ${statisticalInsights['confidence_interval'] ?? 'N/A'}
+P ویلیو: ${statisticalInsights['p_value'] ?? 'N/A'}
+شماریاتی اہمیت: ${statisticalInsights['significance'] ?? 'N/A'}
+رجحانات: ${statisticalInsights['trends']?.join(', ') ?? 'N/A'}
+
+AI ماڈلز استعمال ہوئے:
+• Gemini Pro - عمومی تجزیہ
+• Medical AI - طبی مخصوص
+• Statistical AI - اعداد و شمار
+''';
+    }
+    return statisticalInsights?.toString() ?? _generateMedicalAnalysis('عام');
+  }
+  
+  // AI رپورٹ جنریشن
+  String _generateAIRreport(Map<String, dynamic> aiResearch, String topic) {
+    final researchSummary = aiResearch['research_summary'] ?? {};
+    
+    return '''
+AI سائنسدان تحقیقی رپورٹ
+==========================
+
+تحقیق کا عنوان: $topic
+
+تاریخ: ${DateTime.now()}
+رپورٹ ID: AI_${DateTime.now().millisecondsSinceEpoch}
+سسٹم: AI سائنسدان پلیٹ فارم
+
+خلاصہ:
+${researchSummary['ai_analysis'] ?? 'AI تجزیہ دستیاب نہیں'}
+
+طریقہ کار:
+${_generateClinicalMethodology(topic)}
+
+AI لیب ٹیسٹنگ:
+${_formatAILabResults(researchSummary['lab_findings'])}
+
+شماریاتی انسائٹس:
+${_formatAIAnalysis(researchSummary['statistical_insights'])}
+
+طبی سفارشات:
+${researchSummary['medical_recommendations'] ?? 'سفارشات دستیاب نہیں'}
+
+مستقبل کی تحقیق کے راستے:
+${researchSummary['future_research_directions'] is List ? 
+  (researchSummary['future_research_directions'] as List).join('\n• ') : 
+  'مستقبل کی تحقیق کے راستے دستیاب نہیں'}
+
+اہم نکات:
+• یہ رپورٹ AI سائنسدان سسٹم کے ذریعے تیار کی گئی ہے
+• مستقبل میں AI APIs کنیکٹ ہوں گی
+• حقیقی ڈیٹا کے ساتھ مزید بہتر تجزیہ ممکن ہوگا
+• طبی مشورے کے لیے ڈاکٹر سے رابطہ کریں
+
+سسٹم کی معلومات:
+• AI ماڈلز: Gemini Pro, Medical AI, Statistical AI
+• ڈیٹا سورس: AI سائنسدان سسٹم
+• جنریشن کا وقت: ${DateTime.now()}
+''';
+  }
+
+  // ========== باقی موجودہ کوڈ (تبدیلی کے بغیر) ==========
   
   // میڈیکل مخصوص ہائپوتھیسس جنریشن
   String _generateMedicalHypothesis(String topic) {
@@ -179,5 +313,23 @@ ${_generateMedicalConclusion(topic)}
       'kidney disease',
       'liver disease'
     ];
+  }
+
+  // ========== نیا AI ریسرچ کے لیے میتھڈز ==========
+  
+  // AI ریسرچ کی تاریخ حاصل کریں
+  Future<List<MedicalResearch>> getAIResearchHistory() async {
+    final allResearch = await LocalStorageService.getResearchHistory();
+    return allResearch.where((research) => research.isAIResearch == true).toList();
+  }
+  
+  // مخلوط تاریخ (عام + AI)
+  Future<List<MedicalResearch>> getCombinedResearchHistory() async {
+    return await LocalStorageService.getResearchHistory();
+  }
+  
+  // AI ریسرچ کو ڈیلیٹ کریں
+  Future<void> deleteAIResearch(String researchId) async {
+    await LocalStorageService.deleteResearch(researchId);
   }
 }
