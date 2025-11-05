@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/medical_research_service.dart';
-import '../services/gemini_service.dart'; // GeminiService import کریں
+import '../services/gemini_service.dart';
 import 'results_screen.dart';
 
 class ResearchScreen extends StatefulWidget {
@@ -13,9 +13,9 @@ class ResearchScreen extends StatefulWidget {
 class _ResearchScreenState extends State<ResearchScreen> {
   final TextEditingController _topicController = TextEditingController();
   final MedicalResearchService _researchService = MedicalResearchService();
-  final GeminiService _geminiService = GeminiService(); // نیا GeminiService
+  final GeminiService _geminiService = GeminiService();
   bool _isLoading = false;
-  bool _isAILoading = false; // نیا AI لوڈنگ اسٹیٹ
+  bool _isAILoading = false;
   String _selectedCategory = '';
 
   // میڈیکل کیٹیگریز
@@ -44,7 +44,6 @@ class _ResearchScreenState extends State<ResearchScreen> {
         backgroundColor: Colors.blue[700],
         foregroundColor: Colors.white,
         actions: [
-          // AI سائنسدان کا بٹن
           IconButton(
             icon: Icon(Icons.smart_toy),
             onPressed: _navigateToAILab,
@@ -89,7 +88,7 @@ class _ResearchScreenState extends State<ResearchScreen> {
 
                   const SizedBox(height: 20),
 
-                  // AI سائنسدان کارڈ - نیا addition
+                  // AI سائنسدان کارڈ
                   Card(
                     color: Colors.purple[50],
                     child: Padding(
@@ -230,7 +229,7 @@ class _ResearchScreenState extends State<ResearchScreen> {
     );
   }
 
-  // نیا لوڈنگ انڈیکیٹر
+  // لوڈنگ انڈیکیٹر
   Widget _buildLoadingIndicator() {
     return Column(
       children: [
@@ -333,45 +332,91 @@ class _ResearchScreenState extends State<ResearchScreen> {
     return examples[category] ?? '$category کا نیا علاج';
   }
 
-  // ========== نیا AI سائنسدان فنکشن ==========
+  // ========== درست AI سائنسدان فنکشن ==========
   
   Future<void> _startAIResearch() async {
-  if (_topicController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
-    );
-    return;
+    if (_topicController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
+      );
+      return;
+    }
+
+    setState(() => _isAILoading = true);
+
+    try {
+      // MedicalResearchService کا نیا method استعمال کریں
+      final aiResearchResult = await _researchService.conductAIScientificResearch(
+        _topicController.text,
+        'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
+      );
+      
+      setState(() => _isAILoading = false);
+
+      if (!mounted) return;
+      
+      // درست ResultsScreen constructor استعمال کریں
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsScreen(
+            research: aiResearchResult['medical_research'], // AI سے بنی میڈیکل ریسرچ
+            isAIResearch: true, // AI تحقیق کی نشاندہی
+            aiResearchData: aiResearchResult['ai_research'], // AI سائنسدان کا ڈیٹا
+          ),
+        ),
+      );
+      
+    } catch (e) {
+      setState(() => _isAILoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('AI تحقیق میں مسئلہ آیا: $e')),
+      );
+    }
   }
 
-  setState(() => _isAILoading = true);
+  // ========== درست عام تحقیق فنکشن ==========
+  
+  Future<void> _startResearch() async {
+    if (_topicController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
+      );
+      return;
+    }
 
-  try {
-    // GeminiService کا نیا method استعمال کریں
-    final aiResearch = await _geminiService.conductAIScientificResearch(
-      _topicController.text,
-      'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
-    );
-    
-    setState(() => _isAILoading = false);
+    setState(() => _isLoading = true);
 
-    if (!mounted) return;
-    
-    // نیا ResultsScreen constructor استعمال کریں
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultsScreen(
-          research: research, // آپ کا موجودہ research object
-          isAIResearch: true, // AI تحقیق کی نشاندہی
-          aiResearchData: aiResearch, // AI سائنسدان کا ڈیٹا
+    try {
+      final research = await _researchService.conductMedicalResearch(_topicController.text);
+      
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsScreen(
+            research: research,
+            isAIResearch: false, // عام تحقیق
+          ),
         ),
-      ),
-    );
-    
-  } catch (e) {
-    setState(() => _isAILoading = false);
+      );
+      
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تحقیق میں مسئلہ آیا: $e')),
+      );
+    }
+  }
+
+  // AI لیب اسکرین پر navigate کرنے کا فنکشن
+  void _navigateToAILab() {
+    // فی الحال ایک message دکھائیں
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('AI تحقیق میں مسئلہ آیا: $e')),
+      SnackBar(content: Text('AI سائنسدان لیب جلد دستیاب ہوگا')),
     );
   }
 }
