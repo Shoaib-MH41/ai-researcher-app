@@ -9,15 +9,22 @@ import '../utils/language_utils.dart';
 
 class ResultsScreen extends StatelessWidget {
   final MedicalResearch research;
+  final bool isAIResearch; // نیا parameter - AI تحقیق کی نشاندہی
+  final Map<String, dynamic>? aiResearchData; // نیا - AI سائنسدان کا ڈیٹا
 
-  const ResultsScreen({Key? key, required this.research}) : super(key: key);
+  const ResultsScreen({
+    Key? key, 
+    required this.research,
+    this.isAIResearch = false, // ڈیفالٹ false
+    this.aiResearchData, // optional AI data
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تحقیقات کے نتائج'),
-        backgroundColor: Colors.blue[700],
+        title: Text(isAIResearch ? 'AI سائنسدان رپورٹ' : 'تحقیقات کے نتائج'),
+        backgroundColor: isAIResearch ? Colors.purple[700] : Colors.blue[700],
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -33,8 +40,11 @@ class ResultsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // AI سائنسدان انڈیکیٹر - نیا addition
+              if (isAIResearch) _buildAIScientistHeader(),
+
               Card(
-                color: Colors.blue[50],
+                color: isAIResearch ? Colors.purple[50] : Colors.blue[50],
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -43,12 +53,12 @@ class ResultsScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'تحقیقاتی رپورٹ',
+                          Text(
+                            isAIResearch ? 'AI سائنسی رپورٹ' : 'تحقیقاتی رپورٹ',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                              color: isAIResearch ? Colors.purple : Colors.blue,
                             ),
                           ),
                           Text(
@@ -63,10 +73,10 @@ class ResultsScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         research.topic,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+                          color: isAIResearch ? Colors.purpleAccent : Colors.blueAccent,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -77,11 +87,18 @@ class ResultsScreen extends StatelessWidget {
                           color: Colors.grey[600],
                         ),
                       ),
+                      // AI سٹیٹس - نیا addition
+                      if (isAIResearch && aiResearchData != null) 
+                        _buildAIStatusBadge(),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 20),
+
+              // AI سائنسدان کے اضافی سیکشن - نیا addition
+              if (isAIResearch && aiResearchData != null) 
+                _buildAIResearchSections(),
 
               // Research Sections
               _buildSectionWithIcon(
@@ -127,10 +144,14 @@ class ResultsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
-                child: const Text(
+                child: Text(
+                  isAIResearch ?
+                  'یہ رپورٹ AI سائنسدان سسٹم کے ذریعے تیار کی گئی ہے۔ '
+                  'مستقبل میں AI APIs کنیکٹ ہوں گی مزید بہتر تجزیے کے لیے۔'
+                  :
                   'یہ رپورٹ AI میڈیکل ریسرچ سسٹم کے ذریعے تیار کی گئی ہے۔ '
                   'طبی مشورے کے لیے براہ کرم ہیلتھ کیئر پروفیشنلز سے رابطہ کریں۔',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
                     fontStyle: FontStyle.italic,
@@ -144,14 +165,221 @@ class ResultsScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showPDFLanguageDialog(context),
-        backgroundColor: Colors.red,
+        backgroundColor: isAIResearch ? Colors.purple : Colors.red,
         tooltip: 'PDF ڈاؤن لوڈ کریں',
         child: const Icon(Icons.picture_as_pdf, color: Colors.white),
       ),
     );
   }
 
-  // 🔹 Section Builder
+  // ========== نیا AI سائنسدان ویجیٹس ==========
+
+  // AI سائنسدان ہیڈر
+  Widget _buildAIScientistHeader() {
+    return Card(
+      color: Colors.purple[100],
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.science, color: Colors.purple[700]),
+            SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🔬 AI سائنسدان تحقیقی رپورٹ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple[800],
+                    ),
+                  ),
+                  Text(
+                    'مستقبل کے لیے تیار - APIs کنیکشن کے منتظر',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.purple[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // AI سٹیٹس بیج
+  Widget _buildAIStatusBadge() {
+    final source = aiResearchData!['source'] ?? 'mock_data';
+    final isMockData = source == 'mock_data' || source == 'ai_scientist_mock';
+    
+    return Container(
+      margin: EdgeInsets.only(top: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: isMockData ? Colors.orange[100] : Colors.green[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isMockData ? Colors.orange : Colors.green,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isMockData ? Icons.schedule : Icons.check_circle,
+            size: 14,
+            color: isMockData ? Colors.orange : Colors.green,
+          ),
+          SizedBox(width: 4),
+          Text(
+            isMockData ? 'Mock ڈیٹا - APIs تیار' : 'AI APIs کنیکٹڈ',
+            style: TextStyle(
+              fontSize: 12,
+              color: isMockData ? Colors.orange[800] : Colors.green[800],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // AI تحقیقی سیکشن
+  Widget _buildAIResearchSections() {
+    final researchSummary = aiResearchData!['research_summary'] ?? {};
+    
+    return Column(
+      children: [
+        // AI تجزیہ
+        if (researchSummary['ai_analysis'] != null)
+          _buildAISectionWithIcon(
+            'AI تجزیہ',
+            Icons.psychology,
+            Colors.deepPurple,
+            researchSummary['ai_analysis'].toString(),
+          ),
+
+        // لیب کے نتائج
+        if (researchSummary['lab_findings'] != null)
+          _buildAISectionWithIcon(
+            'AI لیب ٹیسٹنگ',
+            Icons.biotech,
+            Colors.pink,
+            _formatLabFindings(researchSummary['lab_findings']),
+          ),
+
+        // شماریاتی انسائٹس
+        if (researchSummary['statistical_insights'] != null)
+          _buildAISectionWithIcon(
+            'شماریاتی انسائٹس',
+            Icons.trending_up,
+            Colors.teal,
+            _formatStatisticalInsights(researchSummary['statistical_insights']),
+          ),
+
+        // مستقبل کی تحقیق
+        if (researchSummary['future_research_directions'] != null)
+          _buildAISectionWithIcon(
+            'مستقبل کی تحقیق',
+            Icons.arrow_forward,
+            Colors.blue,
+            _formatFutureResearch(researchSummary['future_research_directions']),
+          ),
+      ],
+    );
+  }
+
+  // AI سیکشن بلڈر
+  Widget _buildAISectionWithIcon(
+    String title,
+    IconData icon,
+    Color color,
+    String content,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 20, color: color),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 2,
+          color: color.withOpacity(0.05),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              content,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.6,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ========== ہیلپر فنکشنز ==========
+
+  String _formatLabFindings(dynamic labFindings) {
+    if (labFindings is Map) {
+      return '''
+لیب ٹیسٹس: ${labFindings['lab_tests_performed']?.join(', ') ?? 'N/A'}
+نتائج: ${labFindings['results'] ?? 'N/A'}
+اعتماد کی سطح: ${labFindings['confidence_level'] ?? 'N/A'}
+تجاویز: ${labFindings['recommendations'] ?? 'N/A'}
+''';
+    }
+    return labFindings.toString();
+  }
+
+  String _formatStatisticalInsights(dynamic insights) {
+    if (insights is Map) {
+      return '''
+نمونہ کا سائز: ${insights['sample_size'] ?? 'N/A'}
+اعتماد کا وقفہ: ${insights['confidence_interval'] ?? 'N/A'}
+P ویلیو: ${insights['p_value'] ?? 'N/A'}
+اہمیت: ${insights['significance'] ?? 'N/A'}
+رجحانات: ${insights['trends']?.join(', ') ?? 'N/A'}
+''';
+    }
+    return insights.toString();
+  }
+
+  String _formatFutureResearch(dynamic futureResearch) {
+    if (futureResearch is List) {
+      return futureResearch.map((item) => '• $item').join('\n');
+    }
+    return futureResearch.toString();
+  }
+
+  // 🔹 Section Builder (اصل کوڈ)
   Widget _buildSectionWithIcon(
     String title,
     IconData icon,
@@ -211,7 +439,7 @@ class ResultsScreen extends StatelessWidget {
             icon: const Icon(Icons.picture_as_pdf, size: 20),
             label: const Text('PDF محفوظ کریں'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: isAIResearch ? Colors.purple : Colors.red,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
@@ -241,7 +469,10 @@ class ResultsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("PDF زبان منتخب کریں", textAlign: TextAlign.center),
+        title: Text(
+          isAIResearch ? "AI سائنسی رپورٹ PDF" : "PDF زبان منتخب کریں", 
+          textAlign: TextAlign.center
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -299,7 +530,9 @@ class ResultsScreen extends StatelessWidget {
         // 🔥 Auto Share PDF
         await Share.shareXFiles(
           [XFile(pdfFile.path)],
-          text: 'AI میڈیکل ریسرچ رپورٹ (${LanguageUtils.getNativeLanguageName(language)})',
+          text: isAIResearch ?
+            'AI سائنسدان تحقیقی رپورٹ (${LanguageUtils.getNativeLanguageName(language)})' :
+            'AI میڈیکل ریسرچ رپورٹ (${LanguageUtils.getNativeLanguageName(language)})',
         );
       }
     } catch (e) {
@@ -314,7 +547,15 @@ class ResultsScreen extends StatelessWidget {
 
   // 🔹 Text Share Button
   void _shareResults(BuildContext context) {
-    final shareText = '''
+    final shareText = isAIResearch ? '''
+🔬 AI سائنسدان تحقیقی رپورٹ
+موضوع: ${research.topic}
+مفروضہ: ${research.hypothesis}
+نتیجہ: ${research.conclusion}
+📅 تاریخ: ${_formatDate(research.createdAt)}
+
+AI سائنسدان سسٹم کے ذریعے تیار کردہ
+''' : '''
 🔬 تحقیقاتی رپورٹ
 موضوع: ${research.topic}
 مفروضہ: ${research.hypothesis}
