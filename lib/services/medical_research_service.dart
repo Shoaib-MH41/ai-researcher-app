@@ -6,31 +6,32 @@ class MedicalResearchService {
   final GeminiService _geminiService = GeminiService(); // نیا addition
   
   // میڈیکل مخصوص تحقیقاتی طریقے
-  Future<MedicalResearch> conductMedicalResearch(String medicalTopic) async {
-    // Step 1: میڈیکل ہائپوتھیسس بنائیں
-    String medicalHypothesis = _generateMedicalHypothesis(medicalTopic);
-    
-    // Step 2: کلینیکل میتھڈالوجی بنائیں
-    String clinicalMethodology = _generateClinicalMethodology(medicalTopic);
-    
-    // Step 3: میڈیکل ریسرچ آبجیکٹ بنائیں
-    final research = MedicalResearch(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      topic: medicalTopic,
-      hypothesis: medicalHypothesis,
-      methodology: clinicalMethodology,
-      labResults: _generateMedicalLabResults(medicalTopic),
-      analysis: _generateMedicalAnalysis(medicalTopic),
-      conclusion: _generateMedicalConclusion(medicalTopic),
-      pdfReport: _generateMedicalReport(medicalTopic, medicalHypothesis, clinicalMethodology),
-      createdAt: DateTime.now(),
-    );
-    
-    // Step 4: لوکل اسٹوریج میں محفوظ کریں
-    await LocalStorageService.saveResearch(research);
-    
-    return research;
-  }
+Future<MedicalResearch> conductMedicalResearch(String medicalTopic) async {
+  // Step 1: میڈیکل ہائپوتھیسس بنائیں
+  String medicalHypothesis = _generateMedicalHypothesis(medicalTopic);
+  
+  // Step 2: کلینیکل میتھڈالوجی بنائیں
+  String clinicalMethodology = _generateClinicalMethodology(medicalTopic);
+  
+  // Step 3: میڈیکل ریسرچ آبجیکٹ بنائیں - درست version
+  final research = MedicalResearch(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
+    topic: medicalTopic,
+    hypothesis: medicalHypothesis,
+    methodology: clinicalMethodology,
+    labResults: _generateMedicalLabResults(medicalTopic),
+    analysis: _generateMedicalAnalysis(medicalTopic),
+    conclusion: _generateMedicalConclusion(medicalTopic),
+    pdfReport: _generateMedicalReport(medicalTopic, medicalHypothesis, clinicalMethodology),
+    createdAt: DateTime.now(),
+    isAIResearch: false, // یہ لائن ضروری ہے
+  );
+  
+  // Step 4: لوکل اسٹوریج میں محفوظ کریں
+  await LocalStorageService.saveResearch(research);
+  
+  return research;
+}
 
   // ========== نیا AI سائنسدان ریسرچ میتھڈ ==========
   
