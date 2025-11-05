@@ -11,14 +11,11 @@ class AdminPanel extends StatefulWidget {
 class _AdminPanelState extends State<AdminPanel> {
   final _storage = const FlutterSecureStorage();
   
-  // تمام AI APIs کے لیے controllers
+  // 4 APIs کے لیے controllers
   final _geminiController = TextEditingController();
-  final _deepseekController = TextEditingController();
+  final _huggingfaceController = TextEditingController();
   final _openaiController = TextEditingController();
-  final _wolframController = TextEditingController();
-  final _ncbiController = TextEditingController();
-  final _exaController = TextEditingController();
-  final _biotthingsController = TextEditingController();
+  final _pdfController = TextEditingController(); // PDF کے لیے
   
   bool _isSaving = false;
   String _statusMessage = '';
@@ -30,32 +27,21 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   Future<void> _loadAllKeys() async {
-    // تمام APIs کے keys load karen
     final geminiKey = await _storage.read(key: 'gemini_api_key');
-    final deepseekKey = await _storage.read(key: 'deepseek_api_key');
+    final huggingfaceKey = await _storage.read(key: 'huggingface_api_key');
     final openaiKey = await _storage.read(key: 'openai_api_key');
-    final wolframKey = await _storage.read(key: 'wolfram_api_key');
-    final ncbiKey = await _storage.read(key: 'ncbi_api_key');
-    final exaKey = await _storage.read(key: 'exa_api_key');
-    final biothingsKey = await _storage.read(key: 'biotthings_api_key');
 
     setState(() {
       _geminiController.text = geminiKey ?? '';
-      _deepseekController.text = deepseekKey ?? '';
+      _huggingfaceController.text = huggingfaceKey ?? '';
       _openaiController.text = openaiKey ?? '';
-      _wolframController.text = wolframKey ?? '';
-      _ncbiController.text = ncbiKey ?? '';
-      _exaController.text = exaKey ?? '';
-      _biotthingsController.text = biothingsKey ?? '';
     });
   }
 
   Future<void> _saveAllKeys() async {
-    if (_geminiController.text.isEmpty && 
-        _deepseekController.text.isEmpty &&
-        _openaiController.text.isEmpty) {
+    if (_geminiController.text.isEmpty) {
       setState(() {
-        _statusMessage = '❌ براہ کرم کم از کم ایک AI API key درج کریں';
+        _statusMessage = '❌ براہ کرم کم از کم Gemini API key درج کریں';
       });
       return;
     }
@@ -66,27 +52,14 @@ class _AdminPanelState extends State<AdminPanel> {
     });
 
     try {
-      // تمام keys save karen
       if (_geminiController.text.isNotEmpty) {
         await _storage.write(key: 'gemini_api_key', value: _geminiController.text.trim());
       }
-      if (_deepseekController.text.isNotEmpty) {
-        await _storage.write(key: 'deepseek_api_key', value: _deepseekController.text.trim());
+      if (_huggingfaceController.text.isNotEmpty) {
+        await _storage.write(key: 'huggingface_api_key', value: _huggingfaceController.text.trim());
       }
       if (_openaiController.text.isNotEmpty) {
         await _storage.write(key: 'openai_api_key', value: _openaiController.text.trim());
-      }
-      if (_wolframController.text.isNotEmpty) {
-        await _storage.write(key: 'wolfram_api_key', value: _wolframController.text.trim());
-      }
-      if (_ncbiController.text.isNotEmpty) {
-        await _storage.write(key: 'ncbi_api_key', value: _ncbiController.text.trim());
-      }
-      if (_exaController.text.isNotEmpty) {
-        await _storage.write(key: 'exa_api_key', value: _exaController.text.trim());
-      }
-      if (_biotthingsController.text.isNotEmpty) {
-        await _storage.write(key: 'biotthings_api_key', value: _biotthingsController.text.trim());
       }
 
       setState(() {
@@ -97,48 +70,6 @@ class _AdminPanelState extends State<AdminPanel> {
       setState(() {
         _isSaving = false;
         _statusMessage = '❌ Keys محفوظ نہیں ہو سکیں: $e';
-      });
-    }
-  }
-
-  Future<void> _deleteAllKeys() async {
-    bool? shouldDelete = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تمام Keys حذف کریں'),
-        content: const Text('کیا آپ واقعی تمام API keys حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہو سکتا۔'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('منسوخ'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('حذف کریں'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldDelete == true) {
-      await _storage.delete(key: 'gemini_api_key');
-      await _storage.delete(key: 'deepseek_api_key');
-      await _storage.delete(key: 'openai_api_key');
-      await _storage.delete(key: 'wolfram_api_key');
-      await _storage.delete(key: 'ncbi_api_key');
-      await _storage.delete(key: 'exa_api_key');
-      await _storage.delete(key: 'biotthings_api_key');
-      
-      setState(() {
-        _geminiController.clear();
-        _deepseekController.clear();
-        _openaiController.clear();
-        _wolframController.clear();
-        _ncbiController.clear();
-        _exaController.clear();
-        _biotthingsController.clear();
-        _statusMessage = '🗑️ تمام Keys حذف کر دی گئیں۔';
       });
     }
   }
@@ -156,20 +87,67 @@ class _AdminPanelState extends State<AdminPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🧠 RESEARCH AIs SECTION
-            _buildSectionTitle('🧠 تحقیقاتی AI APIs'),
-            _buildApiField(_geminiController, 'Google Gemini API Key', 'AIza...'),
-            _buildApiField(_deepseekController, 'DeepSeek API Key', 'sk-...'),
-            _buildApiField(_openaiController, 'OpenAI API Key', 'sk-...'),
-            
+            // AI ٹرائیو انفارمیشن
+            _buildAITrioInfo(),
+
             SizedBox(height: 20),
+
+            // 🧠 BioMind AI - بیماری کی تحقیق
+            _buildSectionTitle('🧠 BioMind AI - بیماری کی تحقیق'),
+            _buildApiField(
+              _geminiController, 
+              'Google Gemini API Key *', 
+              'AIza...',
+              true,
+            ),
             
-            // 🔬 SCIENTIFIC APIs SECTION
-            _buildSectionTitle('🔬 سائنسی ڈیٹا APIs'),
-            _buildApiField(_wolframController, 'WolframAlpha App ID', 'XXXXXX-XXXXXXXXXX'),
-            _buildApiField(_ncbiController, 'NCBI API Key (اختیاری)', ''),
-            _buildApiField(_exaController, 'Exa Search API Key', ''),
-            _buildApiField(_biotthingsController, 'BioThings API Key (اختیاری)', ''),
+            SizedBox(height: 16),
+
+            // 💊 CureSynth AI - علاج تخلیق
+            _buildSectionTitle('💊 CureSynth AI - علاج تخلیق'),
+            _buildApiField(
+              _huggingfaceController, 
+              'HuggingFace API Key (اختیاری)', 
+              'hf_...',
+              false,
+            ),
+            
+            SizedBox(height: 16),
+
+            // 📈 MedAnalyzer AI - ڈیٹا تجزیہ
+            _buildSectionTitle('📈 MedAnalyzer AI - ڈیٹا تجزیہ'),
+            _buildApiField(
+              _openaiController, 
+              'OpenAI API Key (اختیاری)', 
+              'sk-...',
+              false,
+            ),
+
+            SizedBox(height: 16),
+
+            // 📄 MedReport AI - PDF رپورٹ
+            _buildSectionTitle('📄 MedReport AI - رپورٹ جنریشن'),
+            Card(
+              color: Colors.green[50],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('PDF رپورٹ سسٹم', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text('آٹومیٹک طور پر فعال - کوئی API key درکار نہیں'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             
             SizedBox(height: 30),
 
@@ -181,15 +159,6 @@ class _AdminPanelState extends State<AdminPanel> {
               color: Colors.green,
             ),
 
-            SizedBox(height: 10),
-
-            _buildMainButton(
-              onPressed: _deleteAllKeys,
-              label: 'تمام Keys حذف کریں',
-              icon: Icons.delete_forever,
-              color: Colors.red,
-            ),
-
             SizedBox(height: 20),
 
             // SYSTEM STATUS
@@ -197,15 +166,66 @@ class _AdminPanelState extends State<AdminPanel> {
 
             SizedBox(height: 20),
 
-            // INFO CARD
-            _buildInfoCard(),
-
-            SizedBox(height: 20),
-
             if (_statusMessage.isNotEmpty)
               _buildStatusMessage(_statusMessage),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAITrioInfo() {
+    return Card(
+      color: Colors.purple[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.groups, color: Colors.purple),
+                SizedBox(width: 8),
+                Text(
+                  '🤖 AI ٹرائیو سسٹم',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            _buildAIInfo('🧠 BioMind AI', 'بیماری کی تحقیق اور تشخیص', 'Google Gemini'),
+            _buildAIInfo('💊 CureSynth AI', 'نیا علاج تخلیق کرنا', 'HuggingFace BioGPT'),
+            _buildAIInfo('📈 MedAnalyzer AI', 'ڈیٹا اور symptoms کا تجزیہ', 'OpenAI/Gemini'),
+            _buildAIInfo('📄 MedReport AI', 'مکمل رپورٹ تیار کرنا', 'PDF جنریشن'),
+            SizedBox(height: 8),
+            Text(
+              'چاروں AI مل کر مکمل میڈیکل ریسرچ کرتے ہیں',
+              style: TextStyle(color: Colors.purple[600], fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAIInfo(String name, String description, String provider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(name, style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(description, style: TextStyle(color: Colors.grey[600])),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(provider, style: TextStyle(fontSize: 12, color: Colors.blue)),
+          ),
+        ],
       ),
     );
   }
@@ -229,36 +249,44 @@ class _AdminPanelState extends State<AdminPanel> {
               ],
             ),
             SizedBox(height: 12),
-            _buildStatusItem('Google Gemini', _geminiController.text.isNotEmpty),
-            _buildStatusItem('DeepSeek AI', _deepseekController.text.isNotEmpty),
-            _buildStatusItem('OpenAI', _openaiController.text.isNotEmpty),
-            _buildStatusItem('WolframAlpha', _wolframController.text.isNotEmpty),
-            _buildStatusItem('NCBI', true), // NCBI generally free
-            _buildStatusItem('Exa Search', _exaController.text.isNotEmpty),
-            _buildStatusItem('BioThings', true), // BioThings generally free
+            _buildStatusItem('BioMind AI (Gemini)', _geminiController.text.isNotEmpty, true),
+            _buildStatusItem('CureSynth AI (HuggingFace)', _huggingfaceController.text.isNotEmpty, false),
+            _buildStatusItem('MedAnalyzer AI (OpenAI)', _openaiController.text.isNotEmpty, false),
+            _buildStatusItem('MedReport AI (PDF)', true, false),
+            SizedBox(height: 8),
+            Divider(),
+            SizedBox(height: 8),
+            Text(
+              _geminiController.text.isNotEmpty 
+                  ? '✅ سسٹم چلنے کے لیے تیار ہے' 
+                  : '❌ BioMind AI (Gemini) API Key درکار ہے',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: _geminiController.text.isNotEmpty ? Colors.green : Colors.red,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusItem(String service, bool isActive) {
+  Widget _buildStatusItem(String service, bool isActive, bool isRequired) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(
             isActive ? Icons.check_circle : Icons.error,
-            color: isActive ? Colors.green : Colors.orange,
+            color: isActive ? Colors.green : (isRequired ? Colors.red : Colors.orange),
             size: 20,
           ),
           SizedBox(width: 8),
-          Text(service),
-          Spacer(),
+          Expanded(child: Text(service)),
           Text(
-            isActive ? 'فعال' : 'غیرفعال',
+            isActive ? 'فعال' : (isRequired ? 'ضروری' : 'غیرفعال'),
             style: TextStyle(
-              color: isActive ? Colors.green : Colors.orange,
+              color: isActive ? Colors.green : (isRequired ? Colors.red : Colors.orange),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -267,56 +295,11 @@ class _AdminPanelState extends State<AdminPanel> {
     );
   }
 
-  Widget _buildInfoCard() {
-    return Card(
-      color: Colors.orange[50],
-      child: const Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.info, color: Colors.orange),
-                SizedBox(width: 8),
-                Text(
-                  'رہنمائی اور لنکس',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Text('• Gemini: https://aistudio.google.com/'),
-            Text('• DeepSeek: https://platform.deepseek.com/'),
-            Text('• OpenAI: https://platform.openai.com/'),
-            Text('• WolframAlpha: https://developer.wolframalpha.com/'),
-            Text('• NCBI: https://www.ncbi.nlm.nih.gov/home/develop/api/'),
-            Text('• Exa: https://exa.ai/'),
-            Text('• BioThings: https://biothings.io/'),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildStatusMessage(String message) {
-    Color backgroundColor = Colors.grey[50]!;
-    Color borderColor = Colors.grey;
-    IconData icon = Icons.info;
-
-    if (message.contains('✅')) {
-      backgroundColor = Colors.green[50]!;
-      borderColor = Colors.green;
-      icon = Icons.check_circle;
-    } else if (message.contains('❌')) {
-      backgroundColor = Colors.red[50]!;
-      borderColor = Colors.red;
-      icon = Icons.error;
-    } else if (message.contains('🗑️')) {
-      backgroundColor = Colors.orange[50]!;
-      borderColor = Colors.orange;
-      icon = Icons.delete;
-    }
+    Color backgroundColor = message.contains('✅') ? Colors.green[50]! : 
+                           message.contains('❌') ? Colors.red[50]! : Colors.grey[50]!;
+    Color borderColor = message.contains('✅') ? Colors.green : 
+                       message.contains('❌') ? Colors.red : Colors.grey;
 
     return Container(
       width: double.infinity,
@@ -326,41 +309,37 @@ class _AdminPanelState extends State<AdminPanel> {
         border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: borderColor),
-          const SizedBox(width: 8),
-          Expanded(child: Text(message)),
-        ],
-      ),
+      child: Text(message),
     );
   }
 
   Widget _buildSectionTitle(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 12, top: 8),
+        padding: const EdgeInsets.only(bottom: 12),
         child: Text(
           title,
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
       );
 
-  Widget _buildApiField(TextEditingController controller, String label, String hint) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          prefixIcon: Icon(Icons.vpn_key),
-        ),
-        obscureText: !label.contains('اختیاری'), // Optional fields visible
+  Widget _buildApiField(
+    TextEditingController controller, 
+    String label, 
+    String hint, 
+    bool isRequired,
+  ) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        prefixIcon: Icon(Icons.vpn_key),
       ),
+      obscureText: !label.contains('اختیاری'),
     );
   }
 
@@ -383,5 +362,13 @@ class _AdminPanelState extends State<AdminPanel> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _geminiController.dispose();
+    _huggingfaceController.dispose();
+    _openaiController.dispose();
+    super.dispose();
   }
 }
