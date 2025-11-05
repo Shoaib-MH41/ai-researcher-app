@@ -1,96 +1,122 @@
+
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/services.dart' show rootBundle; // ⭐ یہ نئی لائن ضرور add کریں
-import '../models/research_model.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+import '../models/medical_research.dart';
 import 'language_utils.dart';
 
 class PDFGenerator {
+  // ========== 1. عام PDF (موجودہ) ==========
   static Future<File> generatePDF({
     required MedicalResearch research,
     required String language,
     required BuildContext context,
   }) async {
+    return await _generatePDF(research, language, context, isAISpecific: false);
+  }
+
+  // ========== 2. AI-specific PDF (نیا) ==========
+  static Future<File> generateAIPDF({
+    required MedicalResearch research,
+    required String language,
+    required BuildContext context,
+  }) async {
+    if (research.isAIResearch && research.aiDiscoveryData != null) {
+      return await _generatePDF(research, language, context, isAISpecific: true);
+    } else {
+      return await generatePDF(research: research, language: language, context: context);
+    }
+  }
+
+  // ========== 3. مرکزی PDF جنریشن (دونوں کے لیے) ==========
+  static Future<File> _generatePDF(
+    MedicalResearch research,
+    String language,
+    BuildContext context, {
+    required bool isAISpecific,
+  }) async {
     try {
       final pdf = pw.Document();
 
-      // ✅ Load fonts dynamically
+      // Load fonts
       final urduFont = pw.Font.ttf(await rootBundle.load("assets/fonts/NotoNastaliqUrdu-VariableFont_wght.ttf"));
       final arabicFont = pw.Font.ttf(await rootBundle.load("assets/fonts/Amiri-Regular.ttf"));
       final englishFont = pw.Font.ttf(await rootBundle.load("assets/fonts/OpenSans-VariableFont_wdth,wght.ttf"));
 
-      pw.Font selectedFont;
+      final font = switch (language.toLowerCase()) {
+        'urdu' => urduFont,
+        'arabic' => arabicFont,
+        _ => englishFont,
+      };
 
-      switch (language.toLowerCase()) {
-        case 'urdu':
-          selectedFont = urduFont;
-          break;
-        case 'arabic':
-          selectedFont = arabicFont;
-          break;
-        default:
-          selectedFont = englishFont;
-      }
-
-      Map<String, String> headers = LanguageUtils.getPDFHeaders(language);
+      final headers = LanguageUtils.getPDFHeaders(language);
 
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(30),
-          build: (pw.Context context) => [
+          build: (pw.Context ctx) => [
+            // Title
             pw.Center(
               child: pw.Text(
-                headers['title'] ?? 'Medical Research Report',
-                style: pw.TextStyle(
-                  font: selectedFont,
-                  fontSize: 24,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.blue800,
-                ),
+                isAISpecific ? 'AI ٹرائیو تحقیقاتی رپورٹ' : headers['title']!,
+                style: pw.TextStyle(font: font, fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800),
               ),
             ),
-            pw.SizedBox(height: 25),
+            pw.SizedBox(height: 20),
 
-            _buildInfoBox(headers, research, selectedFont, language),
+            // AI Trio Badge
+            if (isAISpecific) _buildAITrioBadge(font),
 
+            // Info Box
+            _buildInfoBox(headers, research, font, language),
             pw.SizedBox(height: 20),
-            _buildSection(headers['hypothesis']!, research.hypothesis, selectedFont),
-            pw.SizedBox(height: 20),
-            _buildSection(headers['methodology']!, research.methodology, selectedFont),
-            pw.SizedBox(height: 20),
-            _buildSection(headers['labResults']!, research.labResults, selectedFont),
-            pw.SizedBox(height: 20),
-            _buildSection(headers['conclusion']!, research.conclusion, selectedFont),
+
+            // AI Specific Sections
+            if (isAISpecific) ...[
+              _buildAISection('ریسرچ AI', research.aiDiscoveryData?['research_ai'], font),
+              pw.SizedBox(height: 15),
+              _buildAISection('لیب AI', research.aiDiscoveryData?['lab_ai'], font),
+              pw.SizedBox(height: 15),
+              _buildAISection('رپورٹ AI', research.aiDiscoveryData?['report_ai'], font),
+              pw.SizedBox(height: 20),
+            ],
+
+            // Standard Sections
+            _buildSection(headers['hypothesis']!, research.hypothesis, font),
+            pw.SizedBox(height: 15),
+            _buildSection(headers['methodology']!, research.methodology, font),
+            pw.SizedBox(height: 15),
+            _buildSection(headers['labResults']!, research.labResults, font),
+            pw.SizedBox(height: 15),
+            _buildSection(headers['conclusion']!, research.conclusion, font),
             pw.SizedBox(height: 30),
 
+            // Footer
             pw.Center(
               child: pw.Text(
                 headers['footer'] ?? 'End of Report',
-                style: pw.TextStyle(
-                  font: selectedFont,
-                  fontSize: 12,
-                  fontStyle: pw.FontStyle.italic,
-                  color: PdfColors.grey600,
-                ),
+                style: pw.TextStyle(font: font, fontSize: 12, fontStyle: pw.FontStyle.italic, color: PdfColors.grey600),
               ),
             ),
           ],
         ),
       );
 
-      // 📂 Save PDF
-      final output = await getTemporaryDirectory();
-      final fileName = "medical_research_${research.id}_$language.pdf";
-      final file = File("${output.path}/$fileName");
+      // Save
+      final dir = await getTemporaryDirectory();
+      final fileName = isAISpecific
+          ? "AI_Research_${research.id}_$language.pdf"
+          : "Medical_Research_${research.id}_$language.pdf";
+      final file = File("${dir.path}/$fileName");
       await file.writeAsBytes(await pdf.save());
 
-      // ✅ Show success with Share
       _showSuccessMessage(context, language, file.path, fileName);
-
       return file;
     } catch (e) {
       _showErrorMessage(context, e.toString());
@@ -98,76 +124,87 @@ class PDFGenerator {
     }
   }
 
-  // ℹ️ Info Box
-  static pw.Widget _buildInfoBox(Map<String, String> headers, MedicalResearch research, pw.Font font, String language) {
+  // AI Trio Badge
+  static pw.Widget _buildAITrioBadge(pw.Font font) {
     return pw.Container(
-      width: double.infinity,
-      padding: const pw.EdgeInsets.all(15),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: pw.BoxDecoration(
-        color: PdfColors.blue50,
-        borderRadius: pw.BorderRadius.circular(8),
+        color: PdfColors.purple100,
+        borderRadius: pw.BorderRadius.circular(20),
       ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+      child: pw.Row(
+        mainAxisSize: pw.MainAxisSize.min,
         children: [
-          pw.Text(
-            '${headers['topic']}: ${research.topic}',
-            style: pw.TextStyle(font: font, fontSize: 16, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.SizedBox(height: 5),
-          pw.Text(
-            '${headers['date']}: ${LanguageUtils.formatDate(research.createdAt, language)}',
-            style: pw.TextStyle(font: font, fontSize: 14),
-          ),
+          pw.Text('AI', style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.purple)),
+          pw.Text(' x3 ', style: pw.TextStyle(font: font, fontSize: 10, fontWeight: pw.FontWeight.bold)),
+          pw.Text('ٹرائیو', style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.purple)),
         ],
       ),
     );
   }
 
-  // 📖 Section layout
-  static pw.Widget _buildSection(String title, String content, pw.Font font) {
+  // AI Section
+  static pw.Widget _buildAISection(String title, dynamic data, pw.Font font) {
+    final content = data is Map ? data.toString() : data?.toString() ?? 'کوئی ڈیٹا نہیں';
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(
-          title,
-          style: pw.TextStyle(
-            font: font,
-            fontSize: 18,
-            fontWeight: pw.FontWeight.bold,
-            color: PdfColors.blue700,
-          ),
-        ),
-        pw.SizedBox(height: 8),
+        pw.Text(title, style: pw.TextStyle(font: font, fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.purple700)),
+        pw.SizedBox(height: 6),
         pw.Container(
           width: double.infinity,
-          padding: const pw.EdgeInsets.all(12),
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(color: PdfColors.grey300),
-            borderRadius: pw.BorderRadius.circular(6),
-          ),
-          child: pw.Text(
-            content,
-            style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 1.5),
-          ),
+          padding: const pw.EdgeInsets.all(10),
+          decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.purple300), borderRadius: pw.BorderRadius.circular(6)),
+          child: pw.Text(content, style: pw.TextStyle(font: font, fontSize: 12)),
         ),
       ],
     );
   }
 
-  // ✅ Success Message
-  static void _showSuccessMessage(BuildContext context, String language, String filePath, String fileName) {
-    ScaffoldMessenger.of(context).showSnackBar(
+  // Info Box
+  static pw.Widget _buildInfoBox(Map<String, String> headers, MedicalResearch r, pw.Font font, String lang) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(15),
+      decoration: pw.BoxDecoration(color: PdfColors.blue50, borderRadius: pw.BorderRadius.circular(8)),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text('${headers['topic']}: ${r.topic}', style: pw.TextStyle(font: font, fontSize: 16, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 5),
+          pw.Text('${headers['date']}: ${LanguageUtils.formatDate(r.createdAt, lang)}', style: pw.TextStyle(font: font, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  // Section
+  static pw.Widget _buildSection(String title, String content, pw.Font font) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(title, style: pw.TextStyle(font: font, fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.blue700)),
+        pw.SizedBox(height: 8),
+        pw.Container(
+          width: double.infinity,
+          padding: const pw.EdgeInsets.all(12),
+          decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey300), borderRadius: pw.BorderRadius.circular(6)),
+          child: pw.Text(content, style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 1.5)),
+        ),
+      ],
+    );
+  }
+
+  // Success
+  static void _showSuccessMessage(BuildContext ctx, String lang, String path, String name) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
       SnackBar(
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('📄 PDF کامیابی سے بن گیا'),
-            Text(
-              'زبان: ${LanguageUtils.getNativeLanguageName(language)}',
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
-            ),
+            const Text('PDF کامیابی سے بن گیا'),
+            Text('زبان: ${LanguageUtils.getNativeLanguageName(lang)}', style: const TextStyle(fontSize: 12, color: Colors.white70)),
           ],
         ),
         backgroundColor: Colors.green,
@@ -175,42 +212,38 @@ class PDFGenerator {
         action: SnackBarAction(
           label: 'دیکھیں/شیئر کریں',
           textColor: Colors.white,
-          onPressed: () => _showFileOptions(context, filePath, fileName),
+          onPressed: () => _showFileOptions(ctx, path, name),
         ),
       ),
     );
   }
 
-  // 📤 File Options
-  static void _showFileOptions(BuildContext context, String filePath, String fileName) {
+  // File Options
+  static void _showFileOptions(BuildContext ctx, String path, String name) {
     showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
+      context: ctx,
+      builder: (_) => AlertDialog(
         title: const Text('PDF فائل'),
-        content: Text('فائل محفوظ ہو گئی:\n$fileName'),
+        content: Text('محفوظ ہو گئی:\n$name'),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.share),
             label: const Text('شیئر کریں'),
             onPressed: () async {
-              Navigator.pop(ctx);
-              await Share.shareXFiles([XFile(filePath)], text: 'میری میڈیکل ریسرچ رپورٹ: $fileName');
+              Navigator.pop(_);
+              await Share.shareXFiles([XFile(path)], text: 'میری تحقیقاتی رپورٹ: $name');
             },
           ),
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('بند کریں')),
+          TextButton(onPressed: () => Navigator.pop(_), child: const Text('بند کریں')),
         ],
       ),
     );
   }
 
-  // ❌ Error
-  static void _showErrorMessage(BuildContext context, String error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('⚠️ PDF بنانے میں مسئلہ: $error'),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 5),
-      ),
+  // Error
+  static void _showErrorMessage(BuildContext ctx, String error) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(content: Text('PDF بنانے میں مسئلہ: $error'), backgroundColor: Colors.red, duration: const Duration(seconds: 5)),
     );
   }
 }
