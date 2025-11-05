@@ -103,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                   'History',
                   Icons.history,
                   Colors.orange,
-                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen())),
+                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryScreen())),
                 ),
                 _buildFeatureCard(
                   'Templates',
