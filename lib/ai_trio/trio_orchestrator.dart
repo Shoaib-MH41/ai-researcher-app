@@ -1,92 +1,39 @@
 
-import 'research_ai.dart';
-import 'lab_testing_ai.dart';
+import 'biomind_ai.dart';
+import 'curesynth_ai.dart';
+import 'medanalyzer_ai.dart';
 import 'report_ai.dart';
 
 class TrioOrchestrator {
-  static Future<Map<String, dynamic>> conductFullResearch(String medicalProblem) async {
-    print('🚀 TRIO ORCHESTRATOR: تحقیقاتی عمل شروع کر رہا ہوں...');
-    print('مریض کا مسئلہ: $medicalProblem');
+  static Future<Map<String, dynamic>> conductMedicalResearch(String patientProblem) async {
+    print('🚀 AI ٹرائیو: مکمل میڈیکل ریسرچ شروع کر رہا ہوں...');
     
-    int maxAttempts = 3;
-    int currentAttempt = 1;
-    List<Map<String, dynamic>> researchHistory = [];
+    // 1. BioMind AI: بیماری کی تحقیق
+    print('⏳ BioMind AI کام کر رہا ہے...');
+    final diseaseResearch = await BioMindAI.researchDisease(patientProblem);
     
-    while (currentAttempt <= maxAttempts) {
-      print('\n=== 🔄 تحقیقاتی دور $currentAttempt/$maxAttempts ===');
-      
-      // 1. پہلا AI: ریسرچ کرے
-      print('⏳ RESEARCH AI کام کر رہا ہے...');
-      final research = await ResearchAI.discoverNovelTreatment(medicalProblem);
-      researchHistory.add({
-        'attempt': currentAttempt,
-        'research': research,
-        'timestamp': DateTime.now()
-      });
-      
-      // 2. دوسرا AI: لیب ٹیسٹنگ کرے
-      print('⏳ LAB TESTING AI کام کر رہا ہے...');
-      final labTest = await LabTestingAI.testTreatment(research);
-      
-      // 3. اگر لیب ٹیسٹ کامیاب ہو
-      if (labTest['success'] == true) {
-        print('✅ لیب ٹیسٹ کامیاب! رپورٹ تیار کی جا رہی ہے...');
-        
-        // 4. تیسرا AI: رپورٹ بنائے
-        final report = await ReportAI.generateCompleteReport(
-          researchData: research,
-          labResults: labTest,
-          originalProblem: medicalProblem,
-          attempts: currentAttempt,
-          status: 'success',
-        );
-        
-        return {
-          'status': 'success',
-          'attempts': currentAttempt,
-          'final_report': report,
-          'research_history': researchHistory,
-          'message': '🎉 کامیابی! نیا علاج دریافت ہو گیا۔',
-          'treatment_name': research['treatment_name'],
-          'confidence': research['confidence_score'],
-        };
-      } else {
-        print('❌ لیب ٹیسٹ ناکام۔ دوبارہ کوشش کر رہا ہوں...');
-        print('مسائل: ${labTest['issues_found']}');
-        
-        currentAttempt++;
-        
-        if (currentAttempt > maxAttempts) {
-          // آخری دور میں بھی ناکامی پر رپورٹ بنائیں
-          print('⚠️ زیادہ سے زیادہ کوششوں کے باوجود ناکامی');
-          final report = await ReportAI.generateCompleteReport(
-            researchData: research,
-            labResults: labTest,
-            originalProblem: medicalProblem,
-            attempts: maxAttempts,
-            status: 'failed',
-          );
-          
-          return {
-            'status': 'failed',
-            'attempts': maxAttempts,
-            'final_report': report,
-            'research_history': researchHistory,
-            'message': '❌ زیادہ سے زیادہ تحقیقات کے باوجود کامیاب علاج دریافت نہیں ہو سکا۔',
-            'last_treatment': research['treatment_name'],
-            'issues': labTest['issues_found'],
-          };
-        }
-        
-        // اگلے دور کے لیے تھوڑا انتظار
-        await Future.delayed(Duration(seconds: 1));
-      }
-    }
+    // 2. CureSynth AI: علاج تخلیق
+    print('⏳ CureSynth AI کام کر رہا ہے...');
+    final treatment = await CureSynthAI.createTreatment(diseaseResearch);
+    
+    // 3. MedAnalyzer AI: ڈیٹا تجزیہ
+    print('⏳ MedAnalyzer AI کام کر رہا ہے...');
+    final analysis = await MedAnalyzerAI.analyzeMedicalData(patientProblem, diseaseResearch);
+    
+    // 4. MedReport AI: رپورٹ تیار
+    print('⏳ MedReport AI کام کر رہا ہے...');
+    final report = await ReportAI.generateCompleteReport(
+      diseaseResearch: diseaseResearch,
+      treatment: treatment,
+      analysis: analysis,
+      originalProblem: patientProblem,
+    );
     
     return {
-      'status': 'error', 
-      'message': 'غیر متوقع مسئلہ پیش آیا',
-      'attempts': 0,
+      'status': 'success',
+      'ai_team_used': ['BioMind AI', 'CureSynth AI', 'MedAnalyzer AI', 'MedReport AI'],
+      'final_report': report,
+      'message': '🎉 چاروں AI نے مل کر مکمل میڈیکل ریسرچ مکمل کر لی!'
     };
   }
 }
