@@ -1,32 +1,40 @@
 class GeminiService {
-  // آپ کا موجودہ کوڈ یہاں رہے گا...
+  static String? _apiKey; // ✅ یہ variable شامل کریں
   
-  // ========== نیا AI سائنسدان کوڈ ==========
+  static void setApiKey(String key) {
+    _apiKey = key;
+  }
   
-  // AI سائنسدان کے لیے نئے methods
-  Future<Map<String, dynamic>> conductAIScientificResearch(String researchTopic, String researchData) async {
-    if (_apiKey != null && _apiKey!.isNotEmpty) {
-      // Actual AI research - مستقبل کے لیے
-      await Future.delayed(Duration(seconds: 3));
-      
-      return {
-        'success': true,
-        'research_topic': researchTopic,
-        'ai_analysis': await _performAIResearchAnalysis(researchTopic, researchData),
-        'lab_findings': await _simulateLabTesting(researchData),
-        'statistical_insights': await _generateStatisticalInsights(researchData),
-        'medical_recommendations': await _generateMedicalRecommendations(researchTopic),
-        'future_research_directions': await _suggestFutureResearch(),
-        'source': 'ai_scientist_gemini'
-      };
-    } else {
-      // Mock AI Scientist data
+  // باقی آپ کا موجودہ کوڈ...
+  
+  Future<Map<String, dynamic>> generateMedicalResearch(String topic) async {
+    if (_apiKey != null && _apiKey!.isNotEmpty) { // ✅ اب _apiKey مل جائے گا
+      // آپ کا موجودہ کوڈ...
       await Future.delayed(Duration(seconds: 2));
       
       return {
         'success': true,
-        'research_topic': researchTopic,
-        'ai_analysis': '''
+        'hypothesis': 'Gemini AI تجزیہ',
+        'methodology': 'AI طریقہ کار',
+        'analysis': 'Gemini AI نے تجزیہ کیا',
+        'recommendations': ['تجویز 1', 'تجویز 2'],
+        'source': 'gemini_api'
+      };
+    } else {
+      // Mock data
+      await Future.delayed(Duration(seconds: 2));
+      
+      return {
+        'success': true,
+        'hypothesis': 'ابتدائی تجزیہ',
+        'methodology': 'بنیادی طریقہ کار', 
+        'analysis': 'یہ ابتدائی تجزیہ ہے',
+        'recommendations': ['تجویز 1', 'تجویز 2'],
+        'source': 'mock_data'
+      };
+    }
+  }
+}
 🔬 AI سائنسی تجزیہ - سسٹم تیار ہے
 
 تحقیق: $researchTopic
