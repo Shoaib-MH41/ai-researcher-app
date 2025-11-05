@@ -336,92 +336,42 @@ class _ResearchScreenState extends State<ResearchScreen> {
   // ========== نیا AI سائنسدان فنکشن ==========
   
   Future<void> _startAIResearch() async {
-    if (_topicController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
-      );
-      return;
-    }
-
-    setState(() => _isAILoading = true);
-
-    try {
-      // GeminiService کا نیا method استعمال کریں
-      final aiResearch = await _geminiService.conductAIScientificResearch(
-        _topicController.text,
-        'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
-      );
-      
-      setState(() => _isAILoading = false);
-
-      if (!mounted) return;
-      
-      // Results screen پر AI research بھیجیں
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultsScreen(
-            research: aiResearch,
-            isAIResearch: true, // نیا parameter
-          ),
-        ),
-      );
-      
-    } catch (e) {
-      setState(() => _isAILoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('AI تحقیق میں مسئلہ آیا: $e')),
-      );
-    }
-  }
-
-  // AI لیب اسکرین پر navigate کرنے کا فنکشن
-  void _navigateToAILab() {
-    // آپ research_lab_screen.dart کو اپ ڈیٹ کریں گے
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => ResearchLabScreen()),
-    // );
-    
-    // فی الحال ایک message دکھائیں
+  if (_topicController.text.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('AI سائنسدان لیب جلد دستیاب ہوگا')),
+      const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
     );
+    return;
   }
 
-  // پرانا research method (تبدیلی کے بغیر)
-  Future<void> _startResearch() async {
-    if (_topicController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('براہ کرم تحقیق کا موضوع درج کریں')),
-      );
-      return;
-    }
+  setState(() => _isAILoading = true);
 
-    setState(() => _isLoading = true);
+  try {
+    // GeminiService کا نیا method استعمال کریں
+    final aiResearch = await _geminiService.conductAIScientificResearch(
+      _topicController.text,
+      'میڈیکل ڈیٹا: ${_topicController.text} - کیٹیگری: $_selectedCategory'
+    );
+    
+    setState(() => _isAILoading = false);
 
-    try {
-      final research = await _researchService.conductMedicalResearch(_topicController.text);
-      
-      setState(() => _isLoading = false);
-
-      if (!mounted) return;
-      
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultsScreen(
-            research: research,
-            isAIResearch: false, // پرانی تحقیق
-          ),
+    if (!mounted) return;
+    
+    // نیا ResultsScreen constructor استعمال کریں
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultsScreen(
+          research: research, // آپ کا موجودہ research object
+          isAIResearch: true, // AI تحقیق کی نشاندہی
+          aiResearchData: aiResearch, // AI سائنسدان کا ڈیٹا
         ),
-      );
-      
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('تحقیق میں مسئلہ آیا: $e')),
-      );
-    }
+      ),
+    );
+    
+  } catch (e) {
+    setState(() => _isAILoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('AI تحقیق میں مسئلہ آیا: $e')),
+    );
   }
 }
