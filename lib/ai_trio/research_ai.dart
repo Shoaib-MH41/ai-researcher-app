@@ -1,4 +1,4 @@
-// lib/ai_trio/research_ai.dart
+
 import 'dart:math';
 
 class ResearchAI {
