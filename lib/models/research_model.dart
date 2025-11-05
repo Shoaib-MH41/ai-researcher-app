@@ -1,4 +1,3 @@
-// models/medical_research.dart
 
 class MedicalResearch {
   final String id;
