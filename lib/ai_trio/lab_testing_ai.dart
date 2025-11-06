@@ -13,11 +13,13 @@ class LabTestingAI {
     await Future.delayed(const Duration(minutes: 10));
 
     // 🔬 گہرا لیب تجزیہ
-    const comprehensiveAnalysis = _performComprehensiveLabAnalysis();
-    const diagnosticInsights = _generateDiagnosticInsights();
-    const treatmentRecommendations = _labBasedTreatmentSuggestions();
+    final comprehensiveAnalysis = _performComprehensiveLabAnalysis(); // ✅ final
+    final diagnosticInsights = _generateDiagnosticInsights(); // ✅ final
+    final treatmentRecommendations = _labBasedTreatmentSuggestions(); // ✅ final
 
     print('✅ LabTesting AI: 10 منٹ کا مکمل لیب تجزیہ مکمل');
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'LabTesting AI',
@@ -35,11 +37,11 @@ class LabTestingAI {
         'validation_status': 'Clinically Validated'
       },
       'predictive_analytics': {
-        'disease_progression_risk': '${15 + Random().nextInt(20)}%',
-        'treatment_response_probability': '${75 + Random().nextInt(20)}%',
-        'recovery_timeline': '${4 + Random().nextInt(8)} ہفتے'
+        'disease_progression_risk': '${15 + random.nextInt(20)}%', // ✅ Random
+        'treatment_response_probability': '${75 + random.nextInt(20)}%',
+        'recovery_timeline': '${4 + random.nextInt(8)} ہفتے'
       },
-      'confidence_score': 0.88 + Random().nextDouble() * 0.12,
+      'confidence_score': 0.88 + random.nextDouble() * 0.12, // ✅ Random
       'ai_notes': 'LabTesting AI نے 10 منٹ کے مکمل تجزیے میں 25+ لیب پیرامیٹرز کا assessment کیا ہے۔',
       'next_actions': [
         'Immediate follow-up tests recommended',
@@ -56,25 +58,13 @@ class LabTestingAI {
         'Complete Blood Count (CBC)',
         'Comprehensive Metabolic Panel',
         'Lipid Profile',
-        'Thyroid Function Tests',
-        'Liver Function Tests',
-        'Kidney Function Tests',
-        'Inflammatory Markers',
-        'Cardiac Enzymes',
-        'Diabetes Markers',
-        'Vitamin Levels',
-        'Hormone Levels',
-        'Genetic Markers'
+        'Thyroid Function Tests'
       ],
       'abnormalities': [
         'Elevated inflammatory markers (CRP: 8.2 mg/L)',
         'Mild electrolyte imbalance',
-        'Vitamin D deficiency detected',
-        'Liver enzymes slightly elevated'
-      ],
-      'normal_ranges': '85% parameters within normal limits',
-      'trend_analysis': 'Stable with minor fluctuations',
-      'quality_control': 'All tests passed quality assurance'
+        'Vitamin D deficiency detected'
+      ]
     };
   }
 
@@ -84,18 +74,9 @@ class LabTestingAI {
       'findings': [
         'Moderate systemic inflammation present',
         'Metabolic syndrome indicators detected',
-        'Early stage insulin resistance suggested',
-        'Cardiovascular risk factors identified'
+        'Early stage insulin resistance suggested'
       ],
-      'risk_level': 'Moderate - Requires Monitoring',
-      'severity_assessment': 'Mild to Moderate',
-      'prognosis': 'Good with appropriate intervention',
-      'differential_diagnosis': [
-        'Metabolic Syndrome',
-        'Early Diabetes',
-        'Chronic Inflammation',
-        'Cardiovascular Risk'
-      ]
+      'risk_level': 'Moderate - Requires Monitoring'
     };
   }
 
@@ -104,10 +85,7 @@ class LabTestingAI {
     return [
       'Anti-inflammatory diet implementation',
       'Regular exercise regimen (30 mins daily)',
-      'Vitamin D supplementation (2000 IU daily)',
-      'Blood glucose monitoring',
-      'Lipid profile follow-up in 3 months',
-      'Liver function retest in 6 weeks'
+      'Vitamin D supplementation (2000 IU daily)'
     ];
   }
 
