@@ -32,7 +32,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _addToLog('AI ٹرائیو تحقیقاتی عمل شروع کیا جا رہا ہے...');
 
     try {
-      final result = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
+      final reportpath = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
 
       setState(() {
         _isLoading = false;
@@ -342,7 +342,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       
       // ReportAI.generatePDFReport method کو call کریں
       final pdfPath = await ReportAI.generatePDFReport(
-        report: report,
         language: language,
         context: context,
       );
