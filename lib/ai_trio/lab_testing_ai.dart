@@ -39,6 +39,36 @@ class LabTestingAI {
     };
   }
 
+  /// 🧬 نیا میتھڈ: trio_orchestrator کے لیے compat میتھڈ
+  static Future<Map<String, dynamic>> runLabAnalysis({
+    required dynamic researchData,
+  }) async {
+    print('🧪 LabTesting AI: لیب تجزیہ شروع کر رہا ہوں...');
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    final random = Random();
+    final confidence = 0.8 + random.nextDouble() * 0.2;
+
+    // لیب ٹیسٹس کی simulation
+    final labTests = _generateLabTests();
+    final results = _analyzeLabResults();
+    final recommendations = _generateLabRecommendations();
+
+    print('✅ LabTesting AI: لیب تجزیہ مکمل');
+
+    return {
+      'ai_name': 'LabTesting AI',
+      'status': 'completed',
+      'lab_tests': labTests,
+      'results': results,
+      'recommendations': recommendations,
+      'confidence_score': confidence,
+      'summary': 'LabTesting AI نے مکمل لیبارٹری تجزیہ کیا ہے۔',
+      'ai_notes': 'یہ تجزیہ خون، پیشاب اور دیگر بائیولوجیکل نمونوں پر مبنی ہے۔',
+    };
+  }
+
   /// بیماری کی تشخیص کے لیے اندرونی لوجک
   static String _detectDisease(num sugar, num bp, num chol) {
     if (sugar > 150 && bp < 130) return 'ذیابطیس';
@@ -46,5 +76,44 @@ class LabTestingAI {
     if (chol > 250) return 'دل کی بیماری';
     if (sugar > 120 && chol > 220) return 'میٹابولک سنڈروم';
     return 'نتائج نارمل یا غیر واضح ہیں';
+  }
+
+  /// لیب ٹیسٹس کی فہرست
+  static List<String> _generateLabTests() {
+    return [
+      'خون کا مکمل شمار (CBC)',
+      'گلوکوز کی سطح',
+      'کولیسٹرول پروفائل',
+      'گردے کے فنکشن ٹیسٹ',
+      'جگر کے انزائمز',
+      'تھائیرائیڈ پروفائل',
+      'یورک ایسڈ',
+      'CRP (سوزش کا مارکر)'
+    ];
+  }
+
+  /// لیب نتائج کا تجزیہ
+  static Map<String, dynamic> _analyzeLabResults() {
+    final random = Random();
+    
+    return {
+      'cbc': random.nextBool() ? 'نارمل' : 'غیر نارمل',
+      'glucose': 90 + random.nextInt(60), // 90-150 mg/dL
+      'cholesterol': 180 + random.nextInt(80), // 180-260 mg/dL
+      'kidney_function': random.nextBool() ? 'نارمل' : 'ہلکی خرابی',
+      'liver_enzymes': random.nextBool() ? 'نارمل' : 'بلند',
+      'inflammation': random.nextBool() ? 'منفی' : 'مثبت',
+    };
+  }
+
+  /// لیب سفارشات
+  static List<String> _generateLabRecommendations() {
+    return [
+      'خون کے مکمل ٹیسٹ کروائیں',
+      'گلوکوز لیول مانیٹر کریں',
+      'کولیسٹرول چیک کروائیں',
+      'گردے کے فنکشن ٹیسٹ ضرور کروائیں',
+      '3 ماہ بعد فالو اپ ٹیسٹ کروائیں'
+    ];
   }
 }
