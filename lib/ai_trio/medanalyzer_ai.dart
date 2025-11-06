@@ -48,8 +48,8 @@ class MedAnalyzerAI {
 
     // طبی بصیرتیں جنریٹ کریں
     final insights = _generateMedicalInsights(topic);
-    const riskFactors = _identifyRiskFactors(topic);
-    const treatmentOptions = _suggestTreatmentOptions(topic);
+    final riskFactors = _identifyRiskFactors(topic);        // ✅ const سے final
+    final treatmentOptions = _suggestTreatmentOptions(topic); // ✅ const سے final
 
     print('✅ MedAnalyzer AI: طبی بصیرتیں مکمل');
 
