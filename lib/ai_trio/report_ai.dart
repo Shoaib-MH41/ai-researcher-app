@@ -1,4 +1,5 @@
 // 📁 lib/ai_trio/report_ai.dart
+import 'dart:math';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,11 +23,11 @@ class ReportAI {
     // ⏱️ 10 منٹ کی رپورٹ تیاری
     await Future.delayed(const Duration(minutes: 10));
 
-    // 📊 مکمل رپورٹ ڈیٹا
-    const executiveSummary = _generateExecutiveSummary();
-    const detailedAnalysis = _compileDetailedAnalysis();
-    const recommendations = _formulateRecommendations();
-    const futureDirections = _outlineFutureDirections();
+    // 📊 مکمل رپورٹ ڈیٹا - const ہٹایا
+    final executiveSummary = _generateExecutiveSummary(); // ✅ final
+    final detailedAnalysis = _compileDetailedAnalysis();  // ✅ final
+    final recommendations = _formulateRecommendations();  // ✅ final
+    final futureDirections = _outlineFutureDirections();  // ✅ final
 
     // 📝 PDF رپورٹ تیار کریں
     final pdfPath = await _generateComprehensivePDF(
@@ -38,6 +39,8 @@ class ReportAI {
     );
 
     print('✅ Report AI: 10 منٹ کی رپورٹ جنریشن مکمل');
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'Report AI',
@@ -57,7 +60,7 @@ class ReportAI {
         'validation_status': 'AI-Validated Comprehensive Report'
       },
       'pdf_report_path': pdfPath,
-      'confidence_score': 0.95 + Random().nextDouble() * 0.05,
+      'confidence_score': 0.95 + random.nextDouble() * 0.05, // ✅ Random استعمال
       'ai_notes': 'Report AI نے 10 منٹ کے دوران تمام AI نظاموں کے نتائج کو یکجا کر کے $topic کے لیے ایک مکمل، جامع اور عملدرآمد کے قابل تحقیقاتی رپورٹ تیار کی ہے۔',
       'report_quality_metrics': {
         'comprehensiveness': '95% - All relevant aspects covered',
@@ -208,8 +211,16 @@ class ReportAI {
               ),
             ),
           ),
-          pw.Bullets(
-            texts: executiveSummary['findings'].cast<String>(),
+          // ✅ Bullets کی جگہ Column استعمال
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (final finding in executiveSummary['findings'])
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 5),
+                  child: pw.Text('• $finding'),
+                ),
+            ],
           ),
           
           pw.SizedBox(height: 20),
@@ -250,10 +261,29 @@ class ReportAI {
             ),
           ),
           pw.Text('طبی سفارشات:'),
-          pw.Bullets(texts: recommendations['clinical'].cast<String>()),
+          // ✅ Bullets کی جگہ Column استعمال
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (final recommendation in recommendations['clinical'])
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 5),
+                  child: pw.Text('• $recommendation'),
+                ),
+            ],
+          ),
           pw.SizedBox(height: 10),
           pw.Text('تحقیقی سفارشات:'),
-          pw.Bullets(texts: recommendations['research'].cast<String>()),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (final recommendation in recommendations['research'])
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 5),
+                  child: pw.Text('• $recommendation'),
+                ),
+            ],
+          ),
           
           pw.SizedBox(height: 20),
           pw.Header(
@@ -266,7 +296,16 @@ class ReportAI {
               ),
             ),
           ),
-          pw.Bullets(texts: futureDirections['directions'].cast<String>()),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              for (final direction in futureDirections['directions'])
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 5),
+                  child: pw.Text('• $direction'),
+                ),
+            ],
+          ),
           
           pw.SizedBox(height: 30),
           pw.Divider(),
