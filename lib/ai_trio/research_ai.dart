@@ -32,6 +32,24 @@ class ResearchAI {
     };
   }
 
+  /// نیا میتھڈ: trio_orchestrator کے لیے compat میتھڈ
+  static Future<Map<String, dynamic>> generateResearchSummary({
+    required String topic,
+  }) async {
+    // conductResearch میتھڈ کو ہی کال کریں
+    return await conductResearch(topic);
+  }
+
+  /// دوسرا compat میتھڈ
+  static Future<Map<String, dynamic>> createSummary({
+    required String topic,
+    required String hypothesis,
+  }) async {
+    // conductResearch میتھڈ کو ہی کال کریں
+    final result = await conductResearch(topic);
+    return result;
+  }
+
   /// تحقیق کا خلاصہ اور اہم نکات
   static Map<String, dynamic> _generateInsights(String topic) {
     return {
