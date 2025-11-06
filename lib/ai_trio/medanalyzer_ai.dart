@@ -16,10 +16,12 @@ class MedAnalyzerAI {
     // 📊 مکمل طبی تجزیہ
     final clinicalAnalysis = _performClinicalAnalysis(topic);
     final statisticalInsights = _generateStatisticalModels(topic);
-    const treatmentEfficacy = _analyzeTreatmentEfficacy(topic);
-    const riskStratification = _performRiskStratification(topic);
+    final treatmentEfficacy = _analyzeTreatmentEfficacy(topic); // ✅ final
+    final riskStratification = _performRiskStratification(topic); // ✅ final
 
     print('✅ MedAnalyzer AI: 10 منٹ کا طبی تجزیہ مکمل');
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'MedAnalyzer AI',
@@ -31,10 +33,10 @@ class MedAnalyzerAI {
       'treatment_efficacy_analysis': treatmentEfficacy,
       'risk_stratification': riskStratification,
       'predictive_analytics': {
-        'treatment_success_probability': '${75 + Random().nextInt(20)}%',
-        'disease_progression_risk': '${20 + Random().nextInt(25)}%',
-        'recovery_timeline': '${6 + Random().nextInt(10)} ہفتے',
-        'quality_of_life_improvement': '${40 + Random().nextInt(35)}%'
+        'treatment_success_probability': '${75 + random.nextInt(20)}%', // ✅ Random استعمال
+        'disease_progression_risk': '${20 + random.nextInt(25)}%',
+        'recovery_timeline': '${6 + random.nextInt(10)} ہفتے',
+        'quality_of_life_improvement': '${40 + random.nextInt(35)}%'
       },
       'evidence_based_recommendations': [
         'First-line therapy: ${clinicalAnalysis['first_line_therapy']}',
@@ -46,7 +48,7 @@ class MedAnalyzerAI {
         'compliance_level': '95% adherence recommended',
         'customization_required': 'Patient-specific modifications needed'
       },
-      'confidence_score': 0.90 + Random().nextDouble() * 0.10,
+      'confidence_score': 0.90 + random.nextDouble() * 0.10, // ✅ Random استعمال
       'ai_notes': 'MedAnalyzer AI نے 10 منٹ کے گہرے تجزیے میں بیماری کے میکانزمز، علاج کی تاثیر اور مریض کے خطرات کا مکمل جائزہ لیا ہے۔',
       'monitoring_protocol': [
         'Weekly symptom assessment',
@@ -149,16 +151,17 @@ class MedAnalyzerAI {
 
   /// علاج کی تاثیر کا تجزیہ
   static Map<String, dynamic> _analyzeTreatmentEfficacy(String topic) {
+    final random = Random();
     return {
       'current_treatments': {
-        'efficacy_rate': '${65 + Random().nextInt(25)}%',
+        'efficacy_rate': '${65 + random.nextInt(25)}%',
         'safety_profile': 'Generally well-tolerated',
-        'adherence_rate': '${70 + Random().nextInt(20)}%',
+        'adherence_rate': '${70 + random.nextInt(20)}%',
         'cost_effectiveness': 'Moderate to high'
       },
       'emerging_therapies': {
         'promising_candidates': '3 novel approaches identified',
-        'expected_improvement': '${15 + Random().nextInt(20)}% over current standards',
+        'expected_improvement': '${15 + random.nextInt(20)}% over current standards',
         'development_stage': 'Late-stage clinical trials',
         'anticipated_availability': '2-3 years'
       },
