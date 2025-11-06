@@ -1,23 +1,23 @@
-// lib/models/research_model.dart
+import 'package:flutter/foundation.dart';
 
-import 'dart:convert';
-
-/// MedicalResearch ماڈل کلاس —
-/// یہ AI یا انسان دونوں کی ریسرچ رپورٹس کو سنبھالنے کے لیے استعمال ہوتی ہے۔
+/// 🧬 MedicalResearch model —
+/// AI research pipeline کے تمام مراحل کا ڈیٹا اسٹور کرتا ہے
 class MedicalResearch {
   final String id;
-  final String topic;
-  final String hypothesis;
-  final String methodology;
-  final String labResults;
-  final String analysis;
-  final String conclusion;
-  final String pdfReport;
+  final String topic; // تحقیق کا عنوان
+  final String hypothesis; // AI یا انسان کی پیش کردہ مفروضہ
+  final String methodology; // تحقیق کا طریقہ کار
+  final String labResults; // لیب کے نتائج (formatted text)
+  final String analysis; // تجزیہ اور مشاہدات
+  final String conclusion; // نتیجہ یا سفارش
+  final String pdfReport; // مکمل رپورٹ PDF text version
   final DateTime createdAt;
-  final bool isAIResearch;
-  final Map<String, dynamic> aiDiscoveryData;
+  final bool isAIResearch; // اگر یہ AI-generated رپورٹ ہے
 
-  MedicalResearch({
+  /// AI team data — ReportAI, ResearchAI, LabTestingAI وغیرہ
+  final Map<String, dynamic>? aiDiscoveryData;
+
+  const MedicalResearch({
     required this.id,
     required this.topic,
     required this.hypothesis,
@@ -27,11 +27,29 @@ class MedicalResearch {
     required this.conclusion,
     required this.pdfReport,
     required this.createdAt,
-    required this.isAIResearch,
-    required this.aiDiscoveryData,
+    this.isAIResearch = false,
+    this.aiDiscoveryData,
   });
 
-  Map<String, dynamic> toMap() {
+  /// 🧾 JSON to Object
+  factory MedicalResearch.fromJson(Map<String, dynamic> json) {
+    return MedicalResearch(
+      id: json['id'] ?? '',
+      topic: json['topic'] ?? 'نامعلوم موضوع',
+      hypothesis: json['hypothesis'] ?? 'کوئی مفروضہ نہیں',
+      methodology: json['methodology'] ?? '',
+      labResults: json['labResults'] ?? '',
+      analysis: json['analysis'] ?? '',
+      conclusion: json['conclusion'] ?? '',
+      pdfReport: json['pdfReport'] ?? '',
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      isAIResearch: json['isAIResearch'] ?? false,
+      aiDiscoveryData: json['aiDiscoveryData'],
+    );
+  }
+
+  /// 📦 Object to JSON
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'topic': topic,
@@ -47,24 +65,9 @@ class MedicalResearch {
     };
   }
 
-  factory MedicalResearch.fromMap(Map<String, dynamic> map) {
-    return MedicalResearch(
-      id: map['id'] ?? '',
-      topic: map['topic'] ?? '',
-      hypothesis: map['hypothesis'] ?? '',
-      methodology: map['methodology'] ?? '',
-      labResults: map['labResults'] ?? '',
-      analysis: map['analysis'] ?? '',
-      conclusion: map['conclusion'] ?? '',
-      pdfReport: map['pdfReport'] ?? '',
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
-      isAIResearch: map['isAIResearch'] ?? false,
-      aiDiscoveryData: Map<String, dynamic>.from(map['aiDiscoveryData'] ?? {}),
-    );
+  /// 🧠 Debug display
+  @override
+  String toString() {
+    return 'MedicalResearch(id: $id, topic: $topic, AI: $isAIResearch)';
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory MedicalResearch.fromJson(String source) =>
-      MedicalResearch.fromMap(json.decode(source));
 }
