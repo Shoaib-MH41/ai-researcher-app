@@ -15,11 +15,13 @@ class BioMindAI {
 
     // 🔬 مکمل بائیولوجیکل تجزیہ
     final molecularAnalysis = _performMolecularAnalysis(topic);
-    const geneticFactors = _analyzeGeneticFactors(topic);
-    const cellularPathways = _mapCellularPathways(topic);
-    const systemsBiology = _integrateSystemsBiology(topic);
+    final geneticFactors = _analyzeGeneticFactors(topic); // ✅ final
+    final cellularPathways = _mapCellularPathways(topic); // ✅ final
+    final systemsBiology = _integrateSystemsBiology(topic); // ✅ final
 
     print('✅ BioMind AI: 10 منٹ کی بائیولوجیکل تحقیق مکمل');
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'BioMind AI',
@@ -47,7 +49,7 @@ class BioMindAI {
         'target_validation': 'Computational validation completed',
         'clinical_relevance': 'High translational potential'
       },
-      'confidence_score': 0.87 + Random().nextDouble() * 0.13,
+      'confidence_score': 0.87 + random.nextDouble() * 0.13, // ✅ Random استعمال
       'ai_notes': 'BioMind AI نے 10 منٹ کی گہری بائیولوجیکل تحقیق میں بیماری کے مالیکیولر میکانزمز، جینیاتی عوامل اور سیلولر راستوں کا مکمل تجزیہ کیا ہے۔',
       'future_research_directions': [
         'Functional validation of identified targets',
@@ -60,6 +62,7 @@ class BioMindAI {
 
   /// مالیکیولر تجزیہ
   static Map<String, dynamic> _performMolecularAnalysis(String topic) {
+    final random = Random();
     return {
       'mechanisms': [
         'Signal transduction pathway dysregulation',
@@ -95,10 +98,11 @@ class BioMindAI {
 
   /// جینیاتی عوامل
   static Map<String, dynamic> _analyzeGeneticFactors(String topic) {
+    final random = Random();
     return {
       'architecture': {
-        'heritability_estimate': '${30 + Random().nextInt(40)}%',
-        'genetic_variants': '${15 + Random().nextInt(20)} significant variants',
+        'heritability_estimate': '${30 + random.nextInt(40)}%',
+        'genetic_variants': '${15 + random.nextInt(20)} significant variants',
         'polygenic_risk': 'Moderate to high genetic contribution',
         'gene_environment_interactions': 'Multiple interactions identified'
       },
@@ -119,6 +123,7 @@ class BioMindAI {
 
   /// سیلولر راستے
   static Map<String, dynamic> _mapCellularPathways(String topic) {
+    final random = Random();
     return {
       'pathways': [
         {
@@ -143,12 +148,13 @@ class BioMindAI {
         'Cellular response indicators',
         'Treatment sensitivity signatures'
       ],
-      'network_analysis': 'Complex interaction network with ${50 + Random().nextInt(100)} nodes'
+      'network_analysis': 'Complex interaction network with ${50 + random.nextInt(100)} nodes'
     };
   }
 
   /// سسٹمز بائیولوجی انٹیگریشن
   static Map<String, dynamic> _integrateSystemsBiology(String topic) {
+    final random = Random();
     return {
       'integration': {
         'multi_omics_integration': 'Genomics, transcriptomics, proteomics',
@@ -163,7 +169,7 @@ class BioMindAI {
         'Intervention optimization'
       ],
       'translational_potential': {
-        'drug_repurposing_opportunities': '${3 + Random().nextInt(5)} candidates identified',
+        'drug_repurposing_opportunities': '${3 + random.nextInt(5)} candidates identified',
         'combination_therapy_optimization': 'Synergistic pairs discovered',
         'personalized_dosing_algorithms': 'AI-optimized regimens'
       }
