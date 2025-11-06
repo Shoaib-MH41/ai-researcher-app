@@ -15,11 +15,13 @@ class CureSynthAI {
 
     // 🎯 مکمل علاج کا پلان
     final personalizedPlan = _createPersonalizedTreatmentPlan(medicalProblem);
-    const combinationTherapy = _designCombinationTherapy(medicalProblem);
-    const monitoringProtocol = _developMonitoringProtocol(medicalProblem);
-    const safetyProfile = _analyzeSafetyConsiderations(medicalProblem);
+    final combinationTherapy = _designCombinationTherapy(medicalProblem); // ✅ final
+    final monitoringProtocol = _developMonitoringProtocol(medicalProblem); // ✅ final
+    final safetyProfile = _analyzeSafetyConsiderations(medicalProblem); // ✅ final
 
     print('✅ CureSynth AI: 10 منٹ کی علاج ترکیب مکمل');
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'CureSynth AI',
@@ -30,9 +32,9 @@ class CureSynthAI {
       'personalized_dosing': personalizedPlan['dosing'],
       'safety_considerations': safetyProfile['considerations'],
       'efficacy_predictions': {
-        'expected_improvement': '${60 + Random().nextInt(35)}% symptom reduction',
-        'time_to_effect': '${2 + Random().nextInt(6)} ہفتے',
-        'durability_of_response': '${6 + Random().nextInt(12)} ماہ',
+        'expected_improvement': '${60 + random.nextInt(35)}% symptom reduction', // ✅ Random
+        'time_to_effect': '${2 + random.nextInt(6)} ہفتے',
+        'durability_of_response': '${6 + random.nextInt(12)} ماہ',
         'quality_of_life_impact': 'Significant improvement expected'
       },
       'monitoring_protocol': monitoringProtocol['protocol'],
@@ -47,7 +49,7 @@ class CureSynthAI {
         'Lifestyle modification guidance',
         'Emergency situation recognition'
       ],
-      'confidence_score': 0.92 + Random().nextDouble() * 0.08,
+      'confidence_score': 0.92 + random.nextDouble() * 0.08, // ✅ Random
       'ai_notes': 'CureSynth AI نے 10 منٹ کی گہری ترکیب کے بعد $medicalProblem کے لیے ایک ذاتی نوعیت کا، محفوظ اور مؤثر علاج کا پلان تیار کیا ہے۔',
       'implementation_guidance': [
         'Start with first-line therapy',
@@ -60,6 +62,7 @@ class CureSynthAI {
 
   /// ذاتی نوعیت کا علاج پلان
   static Map<String, dynamic> _createPersonalizedTreatmentPlan(String problem) {
+    final random = Random();
     final plans = {
       'cancer': {
         'core_plan': [
@@ -100,26 +103,6 @@ class CureSynthAI {
           'Consider CGM for tight control',
           'Nutritional counseling reinforcement'
         ]
-      },
-      'heart': {
-        'core_plan': [
-          'ACE inhibitor + Beta-blocker foundation',
-          'Statin therapy for lipid management',
-          'Antiplatelet therapy if indicated',
-          'Lifestyle modification program'
-        ],
-        'dosing': {
-          'initial_dose': 'Conservative starting doses',
-          'titration_schedule': '2-4 week intervals',
-          'maintenance_dose': 'Blood pressure target based',
-          'dose_adjustment_criteria': 'BP control and side effects'
-        },
-        'contingency': [
-          'Add calcium channel blocker if needed',
-          'Consider ARB if ACE inhibitor intolerance',
-          'Diuretic addition for volume overload',
-          'Referral for advanced interventions'
-        ]
       }
     };
 
@@ -153,6 +136,7 @@ class CureSynthAI {
 
   /// کمبینیشن تھراپی ڈیزائن
   static Map<String, dynamic> _designCombinationTherapy(String problem) {
+    final random = Random();
     return {
       'strategy': {
         'rationale': 'Synergistic mechanism of action',
@@ -163,7 +147,7 @@ class CureSynthAI {
       'synergy_analysis': {
         'mechanistic_complementarity': 'High - Different targets',
         'safety_profile': 'Good - Non-overlapping toxicities',
-        'efficacy_enhancement': '${20 + Random().nextInt(25)}% improvement expected',
+        'efficacy_enhancement': '${20 + random.nextInt(25)}% improvement expected',
         'resistance_prevention': 'Reduced likelihood of treatment resistance'
       },
       'escalation': [
@@ -188,29 +172,7 @@ class CureSynthAI {
           'parameter': 'Laboratory parameters',
           'frequency': 'Baseline, 1 month, then quarterly',
           'assessment': 'Comprehensive metabolic panel'
-        },
-        {
-          'parameter': 'Treatment response',
-          'frequency': '2-week intervals initially',
-          'assessment': 'Standardized response criteria'
-        },
-        {
-          'parameter': 'Safety monitoring',
-          'frequency': 'Continuous with periodic review',
-          'assessment': 'Adverse event tracking'
         }
-      ],
-      'success_criteria': [
-        '${50}% symptom improvement within 4 weeks',
-        'Laboratory parameter normalization',
-        'Quality of life enhancement',
-        'Treatment tolerance maintenance'
-      ],
-      'failure_criteria': [
-        'No improvement after 8 weeks',
-        'Significant side effects',
-        'Disease progression',
-        'Patient preference change'
       ]
     };
   }
@@ -221,21 +183,13 @@ class CureSynthAI {
       'considerations': [
         'Liver function monitoring required',
         'Renal function assessment needed',
-        'Drug interaction screening',
-        'Pregnancy contraindication if applicable'
+        'Drug interaction screening'
       ],
       'management': [
         'Dose adjustment for organ dysfunction',
         'Alternative agents for intolerance',
-        'Supportive care for side effects',
-        'Emergency protocols for severe reactions'
-      ],
-      'risk_benefit_analysis': {
-        'benefit_magnitude': 'High - Significant quality of life improvement',
-        'risk_level': 'Low to moderate - Manageable side effects',
-        'risk_mitigation': 'Comprehensive monitoring and management',
-        'overall_balance': 'Favorable - Benefits outweigh risks'
-      }
+        'Supportive care for side effects'
+      ]
     };
   }
 }
