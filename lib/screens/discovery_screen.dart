@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
-import '../ai_trio/trio_orchestrator.dart';  // ✅ درست
-import '../ai_trio/report_ai.dart';          // ✅ درست - ai_trio فولڈر سے
+import '../ai_trio/trio_orchestrator.dart';
+import '../ai_trio/report_ai.dart';
 
 class DiscoveryScreen extends StatefulWidget {
   final String medicalProblem;
@@ -16,7 +16,7 @@ class DiscoveryScreen extends StatefulWidget {
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   String _currentStatus = 'تحقیقات شروع ہو رہی ہیں...';
   int _currentAttempt = 0;
-  int _totalAttempts = 3;
+  final int _totalAttempts = 3;
   bool _isLoading = true;
   bool _isGeneratingPDF = false;
   Map<String, dynamic>? _finalResult;
@@ -32,7 +32,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     _addToLog('AI ٹرائیو تحقیقاتی عمل شروع کیا جا رہا ہے...');
 
     try {
-      final reportpath = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
+      // ✅ اصل ایرر یہاں تھا: "reportpath" کا نام غلط تھا، result ریٹرن نہیں ہو رہا تھا
+      final result = await TrioOrchestrator.conductFullResearch(widget.medicalProblem);
 
       setState(() {
         _isLoading = false;
@@ -167,12 +168,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: color.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6)),
             child: Text(name[0]),
           ),
           const SizedBox(width: 12),
-          Expanded(flex: 2, child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold))),
-          Expanded(flex: 3, child: Text(desc, style: TextStyle(color: Colors.grey[600]))),
+          Expanded(
+              flex: 2,
+              child:
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(
+              flex: 3,
+              child: Text(desc, style: TextStyle(color: Colors.grey[600]))),
         ],
       ),
     );
@@ -189,7 +197,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               children: [
                 Icon(Icons.list_alt, color: Colors.grey),
                 SizedBox(width: 8),
-                Text('تحقیقاتی لاگ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('تحقیقاتی لاگ',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
@@ -198,7 +207,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 itemCount: _progressLog.length,
                 itemBuilder: (context, index) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(_progressLog[index], style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                  child: Text(
+                    _progressLog[index],
+                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                  ),
                 ),
               ),
             ),
@@ -211,8 +223,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   Widget _buildFinalResult() {
     final result = _finalResult!;
     final isSuccess = result['status'] == 'success';
-    
-    // Null-safe access
+
     final message = result['message'] ?? 'کوئی پیغام نہیں';
     final attempts = result['attempts'] ?? 0;
     final treatmentName = result['treatment_name'] ?? 'دریافت شدہ علاج';
@@ -227,12 +238,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           children: [
             Row(
               children: [
-                Icon(isSuccess ? Icons.check_circle : Icons.warning, 
-                     color: isSuccess ? Colors.green : Colors.orange),
+                Icon(isSuccess ? Icons.check_circle : Icons.warning,
+                    color: isSuccess ? Colors.green : Colors.orange),
                 const SizedBox(width: 8),
                 Text(
                   isSuccess ? 'علاج دریافت ہو گیا!' : 'مزید تحقیق کی ضرورت',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -260,7 +272,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             icon: const Icon(Icons.visibility),
             label: const Text('رپورٹ دیکھیں'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple, 
+              backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
@@ -273,7 +285,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             icon: const Icon(Icons.picture_as_pdf),
             label: Text(_isGeneratingPDF ? 'تیار ہو رہا...' : 'PDF ڈاؤن لوڈ'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red, 
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
@@ -285,9 +297,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   void _showPDFLanguageDialog() {
     if (_finalResult == null || _finalResult!['final_report'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے'))
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے')));
       return;
     }
 
@@ -307,7 +318,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  Widget _buildLanguageOption(String code, String name, String flag, Color color) {
+  Widget _buildLanguageOption(
+      String code, String name, String flag, Color color) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       elevation: 2,
@@ -326,9 +338,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Future<void> _generateAIPDF(String language) async {
     if (_finalResult == null || _finalResult!['final_report'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رپورٹ ڈیٹا دستیاب نہیں ہے'))
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('رپورٹ ڈیٹا دستیاب نہیں ہے')));
       return;
     }
 
@@ -339,8 +350,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
     try {
       final report = _finalResult!['final_report'];
-      
-      // ReportAI.generatePDFReport method کو call کریں
+
       final pdfPath = await ReportAI.generatePDFReport(
         language: language,
         context: context,
@@ -364,12 +374,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 try {
                   await Share.shareXFiles(
                     [XFile(pdfPath)],
-                    text: 'AI ٹرائیو تحقیقاتی رپورٹ - ${report['patient_problem'] ?? "طبی تحقیق"}',
+                    text:
+                        'AI ٹرائیو تحقیقاتی رپورٹ - ${report['patient_problem'] ?? "طبی تحقیق"}',
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('شیئر کرنے میں مسئلہ: $e'))
-                  );
+                      SnackBar(content: Text('شیئر کرنے میں مسئلہ: $e')));
                 }
               },
             ),
@@ -381,25 +391,22 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         _isGeneratingPDF = false;
         _currentStatus = 'PDF بنانے میں مسئلہ';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('PDF جنریشن میں مسئلہ: $e'),
-          backgroundColor: Colors.red,
-        )
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('PDF جنریشن میں مسئلہ: $e'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
   void _showReportDialog() {
     if (_finalResult == null || _finalResult!['final_report'] == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے'))
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('رپورٹ دستیاب نہیں ہے')));
       return;
     }
 
     final report = _finalResult!['final_report'];
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -408,21 +415,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('رپورٹ ID: ${report['report_id'] ?? "N/A"}', 
-                   style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text('رپورٹ ID: ${report['report_id'] ?? "N/A"}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               Text(report['executive_summary'] ?? 'خلاصہ دستیاب نہیں'),
               const SizedBox(height: 10),
-              Text('سفارش: ${report['final_recommendation'] ?? "سفارش دستیاب نہیں"}', 
-                   style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                  'سفارش: ${report['final_recommendation'] ?? "سفارش دستیاب نہیں"}',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), 
-            child: const Text('بند کریں')
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('بند کریں')),
         ],
       ),
     );
