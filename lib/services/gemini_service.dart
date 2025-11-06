@@ -5,73 +5,36 @@ class GeminiService {
     _apiKey = key;
   }
   
-  // باقی آپ کا موجودہ کوڈ...
-  
-  Future<Map<String, dynamic>> generateMedicalResearch(String topic) async {
-    if (_apiKey != null && _apiKey!.isNotEmpty) { // ✅ اب _apiKey مل جائے گا
-      // آپ کا موجودہ کوڈ...
-      await Future.delayed(Duration(seconds: 2));
-      
-      return {
-        'success': true,
-        'hypothesis': 'Gemini AI تجزیہ',
-        'methodology': 'AI طریقہ کار',
-        'analysis': 'Gemini AI نے تجزیہ کیا',
-        'recommendations': ['تجویز 1', 'تجویز 2'],
-        'source': 'gemini_api'
-      };
-    } else {
-      // Mock data
-      await Future.delayed(Duration(seconds: 2));
-      
-      return {
-        'success': true,
-        'hypothesis': 'ابتدائی تجزیہ',
-        'methodology': 'بنیادی طریقہ کار', 
-        'analysis': 'یہ ابتدائی تجزیہ ہے',
-        'recommendations': ['تجویز 1', 'تجویز 2'],
-        'source': 'mock_data'
-      };
-    }
-  }
-}
-🔬 AI سائنسی تجزیہ - سسٹم تیار ہے
-
-تحقیق: $researchTopic
-
-AI سائنسدان کے تجزیے کے مراحل:
-1. ڈیٹا کی صفائی اور ترتیب
-2. متعدد AI ماڈلز کا تجزیہ  
-3. لیب ٹیسٹنگ سمیولیشن
-4. شماریاتی تجزیہ
-5. طبی سفارشات
-
-مستقبل میں Gemini API کنیکٹ کریں حقیقی تجزیے کے لیے۔
-''',
-        'lab_findings': await _simulateLabTesting(researchData),
-        'statistical_insights': await _generateStatisticalInsights(researchData),
-        'medical_recommendations': await _generateMedicalRecommendations(researchTopic),
-        'future_research_directions': await _suggestFutureResearch(),
-        'source': 'ai_scientist_mock'
-      };
-    }
+  // 🔬 AI سائنسی تجزیہ - سسٹم تیار ہے
+  Future<Map<String, dynamic>> conductAIScientificResearch(String researchTopic, String researchData) async {
+    await Future.delayed(Duration(seconds: 3));
+    
+    return {
+      'research_topic': researchTopic,
+      'ai_analysis': await _performAIResearchAnalysis(researchTopic, researchData),
+      'lab_findings': await _simulateLabTesting(researchData),
+      'statistical_insights': await _generateStatisticalInsights(researchData),
+      'medical_recommendations': await _generateMedicalRecommendations(researchTopic),
+      'future_research_directions': await _suggestFutureResearch(),
+      'source': 'ai_scientist_mock'
+    };
   }
   
   // AI ریسرچ اینالیسس
   Future<String> _performAIResearchAnalysis(String topic, String data) async {
     await Future.delayed(Duration(milliseconds: 500));
     return '''
-📊 AI ریسرچ اینالیسس:
+// 📊 AI ریسرچ اینالیسس:
 
-موضوع: $topic
-ڈیٹا کا تجزیہ: مثبت رجحانات
-نمونہ کا سائز: کافی
-طریقہ کار: درست
+// موضوع: $topic
+// ڈیٹا کا تجزیہ: مثبت رجحانات
+// نمونہ کا سائز: کافی
+// طریقہ کار: درست
 
-AI ماڈلز تیار ہیں:
-• Gemini Pro - عمومی تجزیہ
-• Medical AI - طبی مخصوص
-• Statistical AI - اعداد و شمار
+// AI ماڈلز تیار ہیں:
+// • Gemini Pro - عمومی تجزیہ
+// • Medical AI - طبی مخصوص
+// • Statistical AI - اعداد و شمار
 ''';
   }
   
@@ -105,6 +68,18 @@ AI ماڈلز تیار ہیں:
     };
   }
   
+  // طبی سفارشات
+  Future<List<String>> _generateMedicalRecommendations(String topic) async {
+    await Future.delayed(Duration(milliseconds: 400));
+    
+    return [
+      'مریض کی مکمل تشخیص کریں',
+      'ضروری ٹیسٹ کروائیں',
+      'مناسب علاج کا انتخاب کریں',
+      'بروقت فالو اپ کریں'
+    ];
+  }
+  
   // مستقبل کی تحقیق کی تجاویز
   Future<List<String>> _suggestFutureResearch() async {
     await Future.delayed(Duration(milliseconds: 400));
@@ -115,6 +90,35 @@ AI ماڈلز تیار ہیں:
       'طویل مدتی اثرات کا جائزہ',
       'مختلف ادویات کے ساتھ موازنہ'
     ];
+  }
+  
+  // میڈیکل ریسرچ جنریشن
+  Future<Map<String, dynamic>> generateMedicalResearch(String topic) async {
+    if (_apiKey != null && _apiKey!.isNotEmpty) {
+      // ✅ اب _apiKey مل جائے گا
+      await Future.delayed(Duration(seconds: 2));
+      
+      return {
+        'success': true,
+        'hypothesis': 'Gemini AI تجزیہ',
+        'methodology': 'AI طریقہ کار',
+        'analysis': 'Gemini AI نے تجزیہ کیا',
+        'recommendations': ['تجویز 1', 'تجویز 2'],
+        'source': 'gemini_api'
+      };
+    } else {
+      // Mock data
+      await Future.delayed(Duration(seconds: 2));
+      
+      return {
+        'success': true,
+        'hypothesis': 'ابتدائی تجزیہ',
+        'methodology': 'بنیادی طریقہ کار', 
+        'analysis': 'یہ ابتدائی تجزیہ ہے',
+        'recommendations': ['تجویز 1', 'تجویز 2'],
+        'source': 'mock_data'
+      };
+    }
   }
   
   // نیا method: مکمل AI سائنسدان رپورٹ
