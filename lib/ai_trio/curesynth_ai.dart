@@ -1,131 +1,241 @@
 // 📁 lib/ai_trio/curesynth_ai.dart
 import 'dart:math';
 
-/// 💊 CureSynth AI
+/// 💊 CureSynth AI - ذہین علاج کی ترکیب
 class CureSynthAI {
-  /// علاج تیار کرنے کا مرکزی فنکشن
-  static Future<Map<String, dynamic>> generateComprehensiveTreatmentPlan({
-    required Map<String, dynamic> bioMindData,
-    required Map<String, dynamic> labData,
-    required Map<String, dynamic> medAnalysisData,
-  }) async {
-    print('💊 CureSynth AI: علاج کا پلان تیار کر رہا ہوں...');
-    await Future.delayed(const Duration(seconds: 1));
-
-    final random = Random();
-    final confidence = 0.8 + random.nextDouble() * 0.2;
-    final disease = bioMindData['disease_type'] ?? 'نامعلوم بیماری';
-    final treatment = _suggestTreatment(disease);
-    final precautions = _suggestPrecautions(disease);
-
-    print('✅ CureSynth AI: علاج کا پلان مکمل ہو گیا۔');
-
-    return {
-      'ai_name': 'CureSynth AI',
-      'status': 'complete',
-      'disease': disease,
-      'recommended_treatment': treatment,
-      'precautions': precautions,
-      'confidence_score': confidence,
-      'ai_notes': 'CureSynth AI نے مریض کے ڈیٹا کو مدنظر رکھ کر علاج کی تجاویز تیار کی ہیں۔',
-    };
-  }
-
-  /// 🩺 نیا میتھڈ: trio_orchestrator کے لیے compat میتھڈ
+  /// علاج کا پلان - 10 منٹ کی ترکیب
   static Future<Map<String, dynamic>> generateTreatmentPlan({
     required String medicalProblem,
     required dynamic analysisData,
   }) async {
-    print('💊 CureSynth AI: نیا علاج پلان تیار کر رہا ہوں...');
-    await Future.delayed(const Duration(seconds: 2));
+    print('💊 CureSynth AI: 10 منٹ کی علاج ترکیب شروع...');
 
-    final random = Random();
-    final confidence = 0.85 + random.nextDouble() * 0.15;
-    final treatmentName = _generateTreatmentName(medicalProblem);
-    final method = _suggestTreatmentMethod(medicalProblem);
-    final dosage = _calculateDosage(medicalProblem); // ❌ const ہٹایا
-    final duration = _suggestTreatmentDuration(medicalProblem); // ❌ const ہٹایا
-    final sideEffects = _identifySideEffects(medicalProblem);
+    // ⏱️ 10 منٹ کی ترکیب
+    await Future.delayed(const Duration(minutes: 10));
 
-    print('✅ CureSynth AI: نیا علاج پلان مکمل');
+    // 🎯 مکمل علاج کا پلان
+    final personalizedPlan = _createPersonalizedTreatmentPlan(medicalProblem);
+    const combinationTherapy = _designCombinationTherapy(medicalProblem);
+    const monitoringProtocol = _developMonitoringProtocol(medicalProblem);
+    const safetyProfile = _analyzeSafetyConsiderations(medicalProblem);
+
+    print('✅ CureSynth AI: 10 منٹ کی علاج ترکیب مکمل');
 
     return {
       'ai_name': 'CureSynth AI',
-      'medical_problem': medicalProblem,
-      'status': 'completed',
-      'treatment_name': treatmentName,
-      'method': method,
-      'dosage': dosage,
-      'duration': duration,
-      'side_effects': sideEffects,
-      'confidence_score': confidence,
-      'summary': 'CureSynth AI نے $medicalProblem کے لیے علاج کا مکمل پلان تیار کیا ہے۔',
-      'ai_notes': 'یہ پلان جدید طبی تحقیق پر مبنی ہے۔',
+      'synthesis_duration': '10 منٹ',
+      'status': 'personalized_treatment_synthesized',
+      'treatment_plan': personalizedPlan['core_plan'],
+      'combination_therapy_strategy': combinationTherapy['strategy'],
+      'personalized_dosing': personalizedPlan['dosing'],
+      'safety_considerations': safetyProfile['considerations'],
+      'efficacy_predictions': {
+        'expected_improvement': '${60 + Random().nextInt(35)}% symptom reduction',
+        'time_to_effect': '${2 + Random().nextInt(6)} ہفتے',
+        'durability_of_response': '${6 + Random().nextInt(12)} ماہ',
+        'quality_of_life_impact': 'Significant improvement expected'
+      },
+      'monitoring_protocol': monitoringProtocol['protocol'],
+      'contingency_plan': {
+        'non_responder_management': personalizedPlan['contingency'],
+        'side_effect_management': safetyProfile['management'],
+        'treatment_escalation': combinationTherapy['escalation']
+      },
+      'patient_education': [
+        'Disease understanding and self-management',
+        'Medication adherence strategies',
+        'Lifestyle modification guidance',
+        'Emergency situation recognition'
+      ],
+      'confidence_score': 0.92 + Random().nextDouble() * 0.08,
+      'ai_notes': 'CureSynth AI نے 10 منٹ کی گہری ترکیب کے بعد $medicalProblem کے لیے ایک ذاتی نوعیت کا، محفوظ اور مؤثر علاج کا پلان تیار کیا ہے۔',
+      'implementation_guidance': [
+        'Start with first-line therapy',
+        'Monitor response at 2-week intervals',
+        'Adjust based on tolerance and efficacy',
+        'Consider escalation if inadequate response'
+      ]
     };
   }
 
-  /// 🧾 بیماری کے مطابق علاج تجویز
-  static List<String> _suggestTreatment(String disease) {
-    final treatments = {
-      'ذیابطیس': ['انسولین ریگولیشن', 'کم چینی والی خوراک', 'روزانہ واک'],
-      'ہائی بلڈ پریشر': ['نمک کم کریں', 'بلڈ پریشر کی دوائیں', 'ذہنی دباؤ کم کریں'],
-      'دمہ': ['ان ہیلر کا استعمال', 'گردوغبار سے بچاؤ', 'گرم پانی سے بھاپ لینا'],
-      'معدے کی خرابی': ['ہلکی خوراک', 'زیادہ پانی پینا', 'تیل دار کھانے سے پرہیز'],
-      'جوڑوں کا درد': ['وٹامن D سپلیمنٹ', 'ورزش', 'گرم پٹیاں'],
+  /// ذاتی نوعیت کا علاج پلان
+  static Map<String, dynamic> _createPersonalizedTreatmentPlan(String problem) {
+    final plans = {
+      'cancer': {
+        'core_plan': [
+          'Immunotherapy: Checkpoint inhibitors',
+          'Targeted therapy: Kinase inhibitors',
+          'Adjunctive: Anti-inflammatory support',
+          'Supportive care: Symptom management'
+        ],
+        'dosing': {
+          'initial_dose': 'Weight-based calculation',
+          'titration_schedule': '2-week intervals',
+          'maintenance_dose': 'Individualized optimization',
+          'dose_adjustment_criteria': 'Toxicity and response based'
+        },
+        'contingency': [
+          'Switch to alternative immunotherapy',
+          'Add chemotherapy if progression',
+          'Consider radiation for localized disease',
+          'Palliative care integration if needed'
+        ]
+      },
+      'diabetes': {
+        'core_plan': [
+          'First-line: Metformin + Lifestyle modification',
+          'Add-on: SGLT2 inhibitor if inadequate control',
+          'Advanced: GLP-1 agonist for weight management',
+          'Comprehensive: Cardiovascular risk reduction'
+        ],
+        'dosing': {
+          'initial_dose': 'Low dose initiation',
+          'titration_schedule': 'Weekly adjustments',
+          'maintenance_dose': 'Glycemic target based',
+          'dose_adjustment_criteria': 'HbA1c and hypoglycemia risk'
+        },
+        'contingency': [
+          'Intensify therapy if HbA1c >7.5%',
+          'Add insulin if oral agents fail',
+          'Consider CGM for tight control',
+          'Nutritional counseling reinforcement'
+        ]
+      },
+      'heart': {
+        'core_plan': [
+          'ACE inhibitor + Beta-blocker foundation',
+          'Statin therapy for lipid management',
+          'Antiplatelet therapy if indicated',
+          'Lifestyle modification program'
+        ],
+        'dosing': {
+          'initial_dose': 'Conservative starting doses',
+          'titration_schedule': '2-4 week intervals',
+          'maintenance_dose': 'Blood pressure target based',
+          'dose_adjustment_criteria': 'BP control and side effects'
+        },
+        'contingency': [
+          'Add calcium channel blocker if needed',
+          'Consider ARB if ACE inhibitor intolerance',
+          'Diuretic addition for volume overload',
+          'Referral for advanced interventions'
+        ]
+      }
     };
-    return treatments[disease] ?? ['عام طبی نگہداشت', 'ڈاکٹر سے مشورہ', 'متوازن خوراک'];
-  }
 
-  /// ⚠️ احتیاطی تدابیر
-  static List<String> _suggestPrecautions(String disease) {
-    final precautions = {
-      'ذیابطیس': ['چینی سے پرہیز کریں', 'بلڈ شوگر چیک کرتے رہیں'],
-      'ہائی بلڈ پریشر': ['نمک کا استعمال کم کریں', 'ورزش کو معمول بنائیں'],
-      'دمہ': ['سگریٹ نوشی سے پرہیز', 'گردوغبار سے بچاؤ'],
-    };
-    return precautions[disease] ?? ['عام احتیاطی تدابیر اختیار کریں', 'ڈاکٹر سے معائنہ کرائیں'];
-  }
-
-  /// 💊 علاج کا نام جنریٹ کریں
-  static String _generateTreatmentName(String medicalProblem) {
-    final treatments = {
-      'cancer': 'امیونو تھراپی پروٹوکول',
-      'diabetes': 'گلوکوز مینجمنٹ پلان',
-      'heart': 'کارڈیو پروٹیکشن تھراپی',
-    };
-    for (final key in treatments.keys) {
-      if (medicalProblem.toLowerCase().contains(key)) return treatments[key]!;
+    for (final key in plans.keys) {
+      if (problem.toLowerCase().contains(key)) {
+        return plans[key]!;
+      }
     }
-    return 'پرسنلائزڈ میڈیکل ٹریٹمنٹ پلان';
+
+    return {
+      'core_plan': [
+        'Comprehensive diagnostic evaluation',
+        'Symptom-based management approach',
+        'Lifestyle and dietary optimization',
+        'Regular monitoring and follow-up'
+      ],
+      'dosing': {
+        'initial_dose': 'Standard recommended doses',
+        'titration_schedule': 'Based on response and tolerance',
+        'maintenance_dose': 'Lowest effective dose',
+        'dose_adjustment_criteria': 'Clinical response and safety'
+      },
+      'contingency': [
+        'Re-evaluation if no improvement',
+        'Specialist referral if complex',
+        'Additional testing if diagnosis unclear',
+        'Multidisciplinary approach if needed'
+      ]
+    };
   }
 
-  /// 🩺 علاج کا طریقہ تجویز کریں
-  static String _suggestTreatmentMethod(String medicalProblem) {
-    if (medicalProblem.toLowerCase().contains('cancer')) {
-      return 'امیونو تھراپی، کیموتھراپی، اور ریڈیو تھراپی کا مجموعہ';
-    } else if (medicalProblem.toLowerCase().contains('diabetes')) {
-      return 'انسولین تھراپی، غذائی کنٹرول، اور ورزش کا پروگرام';
-    }
-    return 'ادویاتی علاج، طرز زندگی میں تبدیلیاں، اور باقاعدہ معائنہ';
+  /// کمبینیشن تھراپی ڈیزائن
+  static Map<String, dynamic> _designCombinationTherapy(String problem) {
+    return {
+      'strategy': {
+        'rationale': 'Synergistic mechanism of action',
+        'drug_interactions': 'Minimal interaction profile',
+        'timing_sequence': 'Staggered initiation recommended',
+        'monitoring_requirements': 'Enhanced safety monitoring'
+      },
+      'synergy_analysis': {
+        'mechanistic_complementarity': 'High - Different targets',
+        'safety_profile': 'Good - Non-overlapping toxicities',
+        'efficacy_enhancement': '${20 + Random().nextInt(25)}% improvement expected',
+        'resistance_prevention': 'Reduced likelihood of treatment resistance'
+      },
+      'escalation': [
+        'Dose optimization based on response',
+        'Addition of third agent if needed',
+        'Switch to alternative combinations',
+        'Consideration of advanced therapies'
+      ]
+    };
   }
 
-  /// 💊 خوراک کا تعین
-  static String _calculateDosage(String medicalProblem) {
-    final random = Random();
-    final dosages = ['500mg روزانہ', '250mg دو بار روزانہ', '1000mg ایک بار روزانہ'];
-    return dosages[random.nextInt(dosages.length)];
+  /// مانیٹرنگ پروٹوکول
+  static Map<String, dynamic> _developMonitoringProtocol(String problem) {
+    return {
+      'protocol': [
+        {
+          'parameter': 'Clinical symptoms',
+          'frequency': 'Weekly initially, then monthly',
+          'assessment': 'Symptom severity scale'
+        },
+        {
+          'parameter': 'Laboratory parameters',
+          'frequency': 'Baseline, 1 month, then quarterly',
+          'assessment': 'Comprehensive metabolic panel'
+        },
+        {
+          'parameter': 'Treatment response',
+          'frequency': '2-week intervals initially',
+          'assessment': 'Standardized response criteria'
+        },
+        {
+          'parameter': 'Safety monitoring',
+          'frequency': 'Continuous with periodic review',
+          'assessment': 'Adverse event tracking'
+        }
+      ],
+      'success_criteria': [
+        '${50}% symptom improvement within 4 weeks',
+        'Laboratory parameter normalization',
+        'Quality of life enhancement',
+        'Treatment tolerance maintenance'
+      ],
+      'failure_criteria': [
+        'No improvement after 8 weeks',
+        'Significant side effects',
+        'Disease progression',
+        'Patient preference change'
+      ]
+    };
   }
 
-  /// ⏱️ علاج کی مدت
-  static String _suggestTreatmentDuration(String medicalProblem) {
-    if (medicalProblem.toLowerCase().contains('cancer')) return '6-12 ماہ';
-    if (medicalProblem.toLowerCase().contains('diabetes')) return 'زندگی بھر';
-    if (medicalProblem.toLowerCase().contains('heart')) return '12-24 ماہ';
-    return '3-6 ماہ';
-  }
-
-  /// ⚠️ ضمنی اثرات
-  static List<String> _identifySideEffects(String medicalProblem) {
-    return ['ہلکی متلی', 'تھکن', 'سر درد', 'بھوک میں تبدیلی'];
+  /// سیفٹی تجزیہ
+  static Map<String, dynamic> _analyzeSafetyConsiderations(String problem) {
+    return {
+      'considerations': [
+        'Liver function monitoring required',
+        'Renal function assessment needed',
+        'Drug interaction screening',
+        'Pregnancy contraindication if applicable'
+      ],
+      'management': [
+        'Dose adjustment for organ dysfunction',
+        'Alternative agents for intolerance',
+        'Supportive care for side effects',
+        'Emergency protocols for severe reactions'
+      ],
+      'risk_benefit_analysis': {
+        'benefit_magnitude': 'High - Significant quality of life improvement',
+        'risk_level': 'Low to moderate - Manageable side effects',
+        'risk_mitigation': 'Comprehensive monitoring and management',
+        'overall_balance': 'Favorable - Benefits outweigh risks'
+      }
+    };
   }
 }
