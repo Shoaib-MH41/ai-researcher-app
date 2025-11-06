@@ -13,9 +13,11 @@ class ResearchAI {
     // 📊 تحقیقاتی ڈیٹا تیار کریں
     final researchData = await _performDeepResearch(topic);
     final breakthrough = _discoverBreakthrough(topic);
-    const futurePredictions = _predictFutureTrends(topic);
+    final futurePredictions = _predictFutureTrends(topic); // ✅ final
 
     print("✅ Research AI: 30 منٹ کی گہری تحقیق مکمل - نئے دریافت: ${breakthrough['name']}");
+
+    final random = Random(); // ✅ Random شامل کیا
 
     return {
       'ai_name': 'Research AI',
@@ -28,7 +30,7 @@ class ResearchAI {
       'future_predictions': futurePredictions,
       'research_methodology': 'AI-Powered Deep Literature Analysis + Data Mining',
       'sources_analyzed': researchData['sources'],
-      'confidence_score': 0.85 + Random().nextDouble() * 0.15,
+      'confidence_score': 0.85 + random.nextDouble() * 0.15, // ✅ Random استعمال
       'ai_notes': 'Research AI نے 30 منٹ کی گہری تحقیق کے بعد $topic کے لیے نئے سائنسی راستے دریافت کیے ہیں۔',
       'next_steps': [
         'Clinical Trials کے لیے تیار',
@@ -42,8 +44,8 @@ class ResearchAI {
   static Future<Map<String, dynamic>> _performDeepResearch(String topic) async {
     // 🔍 مختلف تحقیقاتی مراحل
     final literatureReview = _conductLiteratureReview(topic);
-    const dataAnalysis = _analyzeResearchData(topic);
-    const hypothesisGeneration = _generateNovelHypotheses(topic);
+    final dataAnalysis = _analyzeResearchData(topic); // ✅ final
+    final hypothesisGeneration = _generateNovelHypotheses(topic); // ✅ final
 
     return {
       'insights': literatureReview['key_findings'],
